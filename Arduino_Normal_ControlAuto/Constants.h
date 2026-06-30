@@ -1,6 +1,6 @@
 #pragma once
 
-static constexpr unsigned long ESP32_SERIAL_BAUD = 9600;
+static constexpr unsigned long ESP32_SERIAL_BAUD = 115200;
 
 // Ajusta estos pines a tu driver real.
 static constexpr int MOTOR_RIGHT_EN  = 5;

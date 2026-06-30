@@ -715,10 +715,59 @@
     let isConnected = false;
     let lastSendAt = 0;
     let lastKeyboardCmd = null;
+    let telemetryPollId = null;
+
     const SEND_THROTTLE_MS = 90;
+    const TELEMETRY_POLL_MS = 700;
 
     function nowTime() {
       return new Date().toLocaleTimeString();
+    }
+
+    function getTelemetryUrl() {
+      const token = UI.token.value.trim();
+      const query = token ? `?token=${encodeURIComponent(token)}` : "";
+
+      return `${getBaseHttpUrl()}/telemetry${query}`;
+    }
+
+    function stopTelemetryPolling() {
+      if (telemetryPollId) {
+        clearInterval(telemetryPollId);
+        telemetryPollId = null;
+      }
+    }
+
+    function startTelemetryPolling() {
+      stopTelemetryPolling();
+
+      fetchTelemetryHttp();
+      telemetryPollId = setInterval(fetchTelemetryHttp, TELEMETRY_POLL_MS);
+    }
+
+    async function fetchTelemetryHttp() {
+      if (UI.mode.value !== "http") return;
+
+      try {
+        const response = await fetch(getTelemetryUrl(), {
+          method: "GET",
+          cache: "no-store"
+        });
+
+        const text = await response.text();
+
+        if (!response.ok) {
+          setConnectionState(false, "Error sensores");
+          log(`No se pudo leer telemetría. HTTP ${response.status}: ${text || "sin cuerpo"}`, "warn");
+          return;
+        }
+
+        parseTelemetry(text);
+        setConnectionState(true, "HTTP + sensores");
+      } catch (error) {
+        setConnectionState(false, "Sin sensores");
+        log(`Fallo leyendo telemetría: ${error.message}`, "warn");
+      }
     }
 
     function log(message, type = "info") {
@@ -857,6 +906,8 @@
     }
 
     function disconnect() {
+      stopTelemetryPolling();
+
       if (ws) {
         ws.close();
         ws = null;
@@ -883,10 +934,10 @@
       highlightButton(command);
 
       if (UI.mode.value === "http") {
-        await sendHttpCommand(command);
+        await testHttpConnection();
+        startTelemetryPolling();
         return;
       }
-
       sendWsCommand(command);
     }
 
@@ -937,10 +988,14 @@
     function parseTelemetry(message) {
       let data = null;
 
-      try {
-        data = JSON.parse(message);
-      } catch (_) {
-        data = parseTextTelemetry(message);
+      if (typeof message === "object" && message !== null) {
+        data = message;
+      } else {
+        try {
+          data = JSON.parse(String(message));
+        } catch (_) {
+          data = parseTextTelemetry(String(message));
+        }
       }
 
       if (!data) return;

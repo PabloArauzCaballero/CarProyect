@@ -1,7 +1,38 @@
 #include <Arduino.h>
+
 #include "Constants.h"
 #include "Globals.h"
 #include "TelemetryManager.h"
+
+static String telemetryBuffer;
+
+static bool parseTelemetryLine(const String& rawLine) {
+  String line = rawLine;
+  line.trim();
+
+  if (line.length() == 0) return false;
+
+  int index1 = line.indexOf(',');
+  int index2 = line.indexOf(',', index1 + 1);
+  int index3 = line.indexOf(',', index2 + 1);
+
+  if (index1 == -1 || index2 == -1 || index3 == -1) {
+    Serial.print("Telemetria ignorada, no es CSV completo: [");
+    Serial.print(line);
+    Serial.println("]");
+    return false;
+  }
+
+  motor_der = line.substring(0, index1).toInt();
+  motor_izq = line.substring(index1 + 1, index2).toInt();
+  servo = line.substring(index2 + 1, index3).toInt();
+  distancia = line.substring(index3 + 1).toInt();
+
+  Serial.print("Telemetria OK: ");
+  Serial.println(line);
+
+  return true;
+}
 
 void setupTelemetrySerial() {
   Serial2.begin(ARDUINO_SERIAL_BAUD, SERIAL_8N1, ESP32_RX2_PIN, ESP32_TX2_PIN);
@@ -13,29 +44,24 @@ void setupTelemetrySerial() {
 }
 
 void readTelemetryFromArduino() {
-  if (Serial2.available() <= 0) return;
+  while (Serial2.available() > 0) {
+    char c = Serial2.read();
 
-  String line = Serial2.readStringUntil('\n');
-  line.trim();
+    if (c == '\r') {
+      continue;
+    }
 
-  if (line.length() == 0) return;
+    if (c == '\n') {
+      parseTelemetryLine(telemetryBuffer);
+      telemetryBuffer = "";
+      continue;
+    }
 
-  int index1 = line.indexOf(',');
-  int index2 = line.indexOf(',', index1 + 1);
-  int index3 = line.indexOf(',', index2 + 1);
-
-  if (index1 == -1 || index2 == -1 || index3 == -1) {
-    Serial.print("Telemetria ignorada, no es CSV: [");
-    Serial.print(line);
-    Serial.println("]");
-    return;
+    if (telemetryBuffer.length() < 80) {
+      telemetryBuffer += c;
+    } else {
+      Serial.println("Buffer de telemetria limpiado por exceso de longitud.");
+      telemetryBuffer = "";
+    }
   }
-
-  motor_der = line.substring(0, index1).toInt();
-  motor_izq = line.substring(index1 + 1, index2).toInt();
-  servo     = line.substring(index2 + 1, index3).toInt();
-  distancia = line.substring(index3 + 1).toInt();
-
-  Serial.print("Telemetria OK: ");
-  Serial.println(line);
 }

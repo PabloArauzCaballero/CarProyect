@@ -23,7 +23,9 @@ void setup() {
 void loop() {
   connectMQTTNonBlocking();
   mqttLoop();
+
   readTelemetryFromArduino();
   handleWebClient();
+
   publishTelemetryEveryInterval();
 }

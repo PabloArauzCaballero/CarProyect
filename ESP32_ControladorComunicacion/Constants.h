@@ -1,10 +1,10 @@
 #pragma once
 
-static const char WIFI_SSID[]     = "KATIA CABALLERO";
-static const char WIFI_PASSWORD[] = "72107014";
+static const char WIFI_SSID[]     = "Ciscob2";
+static const char WIFI_PASSWORD[] = "Cisco495245@$%";
 
 // IP de la computadora donde corre Mosquitto, NO la IP del ESP32.
-static const char MQTT_BROKER_IP[] = "192.168.0.143";
+static const char MQTT_BROKER_IP[] = "192.168.100.84";
 static constexpr int MQTT_PORT = 1883;
 
 static constexpr int GRUPO = 1;
