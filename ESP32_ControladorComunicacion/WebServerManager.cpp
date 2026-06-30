@@ -24,11 +24,27 @@ static bool requestHasValidToken(const String& requestLine) {
   return requestLine.indexOf(expected) >= 0;
 }
 
+static String escapeJson(const String& value) {
+  String escaped = "";
+
+  for (unsigned int i = 0; i < value.length(); i++) {
+    char c = value.charAt(i);
+
+    if (c == '\\') escaped += "\\\\";
+    else if (c == '"') escaped += "\\\"";
+    else if (c == '\n') escaped += "\\n";
+    else if (c == '\r') escaped += "\\r";
+    else escaped += c;
+  }
+
+  return escaped;
+}
+
 static void sendHttpResponse(
   WiFiClient& clientWeb,
   const char* status,
   const char* contentType,
-  const char* body
+  const String& body
 ) {
   clientWeb.print("HTTP/1.1 ");
   clientWeb.println(status);
@@ -37,27 +53,31 @@ static void sendHttpResponse(
   clientWeb.println("Access-Control-Allow-Origin: *");
   clientWeb.println("Access-Control-Allow-Methods: GET, OPTIONS");
   clientWeb.println("Access-Control-Allow-Headers: Content-Type");
+  clientWeb.println("Cache-Control: no-store");
   clientWeb.println("Connection: close");
   clientWeb.println();
   clientWeb.println(body);
 }
 
-static void sendTextResponse(WiFiClient& clientWeb, const char* status, const char* body) {
+static void sendTextResponse(WiFiClient& clientWeb, const char* status, const String& body) {
   sendHttpResponse(clientWeb, status, "text/plain", body);
 }
 
 static void sendTelemetryResponse(WiFiClient& clientWeb) {
-  char payload[180];
+  long ageMs = telemetryOk ? (long)(millis() - lastTelemetryReceivedAt) : -1;
 
-  snprintf(
-    payload,
-    sizeof(payload),
-    "{\"motor_der\":%d,\"motor_izq\":%d,\"servo\":%d,\"distancia\":%d}",
-    motor_der,
-    motor_izq,
-    servo,
-    distancia
-  );
+  String payload = "{";
+  payload += "\"motor_der\":" + String(motor_der) + ",";
+  payload += "\"motor_izq\":" + String(motor_izq) + ",";
+  payload += "\"servo\":" + String(servo) + ",";
+  payload += "\"distancia\":" + String(distancia) + ",";
+  payload += "\"telemetry_ok\":" + String(telemetryOk ? "true" : "false") + ",";
+  payload += "\"age_ms\":" + String(ageMs) + ",";
+  payload += "\"parse_errors\":" + String(telemetryParseErrorCount) + ",";
+  payload += "\"ignored_bytes\":" + String(telemetryIgnoredByteCount) + ",";
+  payload += "\"serial_sample\":\"" + escapeJson(lastSerialSample) + "\",";
+  payload += "\"last_raw\":\"" + escapeJson(lastTelemetryRaw) + "\"";
+  payload += "}";
 
   sendHttpResponse(clientWeb, "200 OK", "application/json", payload);
 }
@@ -104,12 +124,18 @@ static void processRequestLine(const String& line, WiFiClient& clientWeb, bool& 
     return;
   }
 
-  Serial2.write(command);
+  // SoftwareSerial del Nano en D13/D10 ahora va a 9600.
+  // Repetimos el comando 2 veces por seguridad; el Nano filtra duplicados rápidos.
+  for (int i = 0; i < 2; i++) {
+    Serial2.write(command);
+    Serial2.flush();
+    delay(5);
+  }
 
   Serial.print("Comando enviado al Arduino normal/Nano: ");
   Serial.println(command);
 
-  sendTextResponse(clientWeb, "200 OK", "OK");
+  sendTextResponse(clientWeb, "200 OK", "OK:" + String(command));
 }
 
 void setupWebServer() {

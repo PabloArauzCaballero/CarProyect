@@ -17,10 +17,15 @@ int measureDistanceCm() {
   digitalWrite(ULTRASONIC_TRIG_PIN, LOW);
 
   unsigned long duration = pulseIn(ULTRASONIC_ECHO_PIN, HIGH, ULTRASONIC_TIMEOUT_US);
-  if (duration == 0) return distancia_cm;
 
-  int cm = duration * 0.034 / 2;
-  if (cm <= 0) return distancia_cm;
+  if (duration == 0) {
+    return 0;
+  }
+
+  int cm = (int)(duration * 0.0343 / 2.0);
+
+  if (cm < 0) return 0;
+  if (cm > 400) return 400;
 
   return cm;
 }

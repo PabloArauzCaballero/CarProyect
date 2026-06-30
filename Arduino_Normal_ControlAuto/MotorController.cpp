@@ -3,75 +3,82 @@
 #include "Globals.h"
 #include "MotorController.h"
 
-static void setRightMotor(int speedValue) {
+static int clampPwm(int speedValue) {
   int pwm = abs(speedValue);
   if (pwm > 255) pwm = 255;
-
-  if (speedValue > 0) {
-    digitalWrite(MOTOR_RIGHT_IN1, HIGH);
-    digitalWrite(MOTOR_RIGHT_IN2, LOW);
-  } else if (speedValue < 0) {
-    digitalWrite(MOTOR_RIGHT_IN1, LOW);
-    digitalWrite(MOTOR_RIGHT_IN2, HIGH);
-  } else {
-    digitalWrite(MOTOR_RIGHT_IN1, LOW);
-    digitalWrite(MOTOR_RIGHT_IN2, LOW);
-  }
-
-  analogWrite(MOTOR_RIGHT_EN, pwm);
-  motor_der = speedValue;
+  return pwm;
 }
 
-static void setLeftMotor(int speedValue) {
-  int pwm = abs(speedValue);
-  if (pwm > 255) pwm = 255;
+static void setOneMotor(int inA, int inB, int enablePin, int speedValue) {
+  int pwm = clampPwm(speedValue);
 
   if (speedValue > 0) {
-    digitalWrite(MOTOR_LEFT_IN1, HIGH);
-    digitalWrite(MOTOR_LEFT_IN2, LOW);
+    digitalWrite(inA, HIGH);
+    digitalWrite(inB, LOW);
   } else if (speedValue < 0) {
-    digitalWrite(MOTOR_LEFT_IN1, LOW);
-    digitalWrite(MOTOR_LEFT_IN2, HIGH);
+    digitalWrite(inA, LOW);
+    digitalWrite(inB, HIGH);
   } else {
-    digitalWrite(MOTOR_LEFT_IN1, LOW);
-    digitalWrite(MOTOR_LEFT_IN2, LOW);
+    digitalWrite(inA, LOW);
+    digitalWrite(inB, LOW);
   }
 
-  analogWrite(MOTOR_LEFT_EN, pwm);
+  analogWrite(enablePin, pwm);
+}
+
+static void setLeftSide(int speedValue) {
+  setOneMotor(MOTI1_A, MOTI1_B, VELI1, speedValue);
+  setOneMotor(MOTI2_A, MOTI2_B, VELI2, speedValue);
   motor_izq = speedValue;
 }
 
+static void setRightSide(int speedValue) {
+  setOneMotor(MOTD1_A, MOTD1_B, VELD1, speedValue);
+  setOneMotor(MOTD2_A, MOTD2_B, VELD2, speedValue);
+  motor_der = speedValue;
+}
+
 void setupMotors() {
-  pinMode(MOTOR_RIGHT_EN, OUTPUT);
-  pinMode(MOTOR_RIGHT_IN1, OUTPUT);
-  pinMode(MOTOR_RIGHT_IN2, OUTPUT);
-  pinMode(MOTOR_LEFT_EN, OUTPUT);
-  pinMode(MOTOR_LEFT_IN1, OUTPUT);
-  pinMode(MOTOR_LEFT_IN2, OUTPUT);
+  pinMode(MOTI1_A, OUTPUT);
+  pinMode(MOTI1_B, OUTPUT);
+  pinMode(VELI1, OUTPUT);
+
+  pinMode(MOTD1_A, OUTPUT);
+  pinMode(MOTD1_B, OUTPUT);
+  pinMode(VELD1, OUTPUT);
+
+  pinMode(MOTI2_A, OUTPUT);
+  pinMode(MOTI2_B, OUTPUT);
+  pinMode(VELI2, OUTPUT);
+
+  pinMode(MOTD2_A, OUTPUT);
+  pinMode(MOTD2_B, OUTPUT);
+  pinMode(VELD2, OUTPUT);
+
   stopMotors();
 }
 
 void moveForward() {
-  setRightMotor(DEFAULT_MOTOR_SPEED);
-  setLeftMotor(DEFAULT_MOTOR_SPEED);
+  setRightSide(DEFAULT_MOTOR_SPEED);
+  setLeftSide(DEFAULT_MOTOR_SPEED);
 }
 
 void moveBackward() {
-  setRightMotor(-DEFAULT_MOTOR_SPEED);
-  setLeftMotor(-DEFAULT_MOTOR_SPEED);
+  setRightSide(-DEFAULT_MOTOR_SPEED);
+  setLeftSide(-DEFAULT_MOTOR_SPEED);
 }
 
 void turnLeft() {
-  setRightMotor(DEFAULT_MOTOR_SPEED);
-  setLeftMotor(-DEFAULT_MOTOR_SPEED);
+  setRightSide(TURN_MOTOR_SPEED);
+  setLeftSide(-TURN_MOTOR_SPEED);
 }
 
 void turnRight() {
-  setRightMotor(-DEFAULT_MOTOR_SPEED);
-  setLeftMotor(DEFAULT_MOTOR_SPEED);
+  setRightSide(-TURN_MOTOR_SPEED);
+  setLeftSide(TURN_MOTOR_SPEED);
 }
 
 void stopMotors() {
-  setRightMotor(0);
-  setLeftMotor(0);
+  setRightSide(0);
+  setLeftSide(0);
 }

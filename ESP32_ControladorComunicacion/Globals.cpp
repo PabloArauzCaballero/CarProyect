@@ -9,6 +9,13 @@ int distancia = 0;
 unsigned long lastMsg = 0;
 unsigned long lastMqttReconnect = 0;
 
+bool telemetryOk = false;
+String lastTelemetryRaw = "";
+unsigned long lastTelemetryReceivedAt = 0;
+unsigned long telemetryParseErrorCount = 0;
+unsigned long telemetryIgnoredByteCount = 0;
+String lastSerialSample = "";
+
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 WiFiServer webServer(WEB_SERVER_PORT);

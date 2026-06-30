@@ -401,7 +401,7 @@
         <h2>Control principal</h2>
         <p class="muted">
           Usa los botones o el teclado. W avanzar, A izquierda, S retroceder, D derecha,
-          X detener, Q/E mover servo.
+          X detener, Q/E mover servo. Direcciones quedan activas hasta presionar STOP.
         </p>
 
         <div class="control-pad">
@@ -509,6 +509,7 @@
     let telemetryPollId = null;
     let lastSendAt = 0;
     let activeMovementKey = null;
+    let lastTelemetryStatus = null;
 
     const SEND_THROTTLE_MS = 90;
     const TELEMETRY_POLL_MS = 700;
@@ -643,7 +644,11 @@
         motor_der: data.motor_der ?? data.motorRight ?? data.rightMotor ?? data.md,
         motor_izq: data.motor_izq ?? data.motorLeft ?? data.leftMotor ?? data.mi,
         servo: data.servo ?? data.servoValue,
-        distancia: data.distancia ?? data.distance ?? data.dist
+        distancia: data.distancia ?? data.distance ?? data.dist,
+        telemetry_ok: data.telemetry_ok,
+        age_ms: data.age_ms,
+        parse_errors: data.parse_errors,
+        last_raw: data.last_raw
       };
     }
 
@@ -697,9 +702,25 @@
 
       const distance = Number(data.distancia);
 
+      if (data.telemetry_ok === false) {
+        UI.sensorState.textContent = "Sin Nano";
+        UI.stateBar.style.width = "0%";
+
+        if (lastTelemetryStatus !== "sin-nano") {
+          log("El ESP32 responde, pero todavía no recibió CSV válido del Arduino Nano. Revisa baudios, TX/RX y GND.", "warn");
+          lastTelemetryStatus = "sin-nano";
+        }
+      } else if (data.telemetry_ok === true && lastTelemetryStatus !== "ok") {
+        log(`Enlace Nano -> ESP32 activo. Último CSV: ${data.last_raw || "sin raw"}`);
+        lastTelemetryStatus = "ok";
+      }
+
       if (data.distancia !== undefined) {
         updateDistance(distance);
-        updateSensorState(distance);
+
+        if (data.telemetry_ok !== false) {
+          updateSensorState(distance);
+        }
       }
 
       if (data.motor_der !== undefined) {
@@ -896,33 +917,7 @@
         const command = button.dataset.cmd;
 
         button.addEventListener("click", () => {
-          if (!MOVEMENT_COMMANDS.has(command)) {
-            sendCommand(command, { force: true });
-          }
-        });
-      });
-
-      document.querySelectorAll(".movement-button").forEach((button) => {
-        const command = button.dataset.cmd;
-
-        button.addEventListener("pointerdown", (event) => {
-          event.preventDefault();
           sendCommand(command, { force: true });
-        });
-
-        button.addEventListener("pointerup", (event) => {
-          event.preventDefault();
-          sendCommand("x", { force: true });
-        });
-
-        button.addEventListener("pointerleave", (event) => {
-          event.preventDefault();
-          sendCommand("x", { force: true });
-        });
-
-        button.addEventListener("pointercancel", (event) => {
-          event.preventDefault();
-          sendCommand("x", { force: true });
         });
       });
 
@@ -957,9 +952,10 @@
 
         event.preventDefault();
 
+        // Para diagnostico y control estable, NO se envia stop al soltar la tecla.
+        // El auto queda con el ultimo comando hasta presionar X o STOP.
         if (activeMovementKey === key) {
           activeMovementKey = null;
-          sendCommand("x", { force: true });
         }
       });
     }

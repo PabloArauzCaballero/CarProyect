@@ -1,107 +1,59 @@
-# Robot Auto - Version corregida para Arduino IDE
+# CarProyect D10/D13 BAUD9600 ROBUSTO
 
-Esta version esta corregida para que Arduino IDE abra todos los archivos como pestañas.
+Versión ajustada para tu cableado actual:
 
-## Importante
-
-Arduino IDE necesita que la carpeta tenga el mismo nombre que el archivo `.ino`.
-
-Por eso ahora las carpetas son:
-
-```txt
-ESP32_ControladorComunicacion/
-  ESP32_ControladorComunicacion.ino
-
-Arduino_Normal_ControlAuto/
-  Arduino_Normal_ControlAuto.ino
+```text
+ESP32 RX2 / GPIO16  <-  Nano D10  (TX SoftwareSerial del Nano)
+ESP32 TX2 / GPIO17  ->  Nano D13  (RX SoftwareSerial del Nano)
+GND                 <-> GND
 ```
 
-## Como abrir
+## Cambio importante
 
-### ESP32
-
-Abre este archivo:
-
-```txt
-ESP32_ControladorComunicacion/ESP32_ControladorComunicacion.ino
-```
-
-Deberian aparecer las pestañas:
-
-```txt
-Constants.h
-Globals.h
-Globals.cpp
-NetworkManager.h
-NetworkManager.cpp
-MqttManager.h
-MqttManager.cpp
-TelemetryManager.h
-TelemetryManager.cpp
-WebServerManager.h
-WebServerManager.cpp
-```
-
-### Arduino normal
-
-Abre este archivo:
-
-```txt
-Arduino_Normal_ControlAuto/Arduino_Normal_ControlAuto.ino
-```
-
-Deberian aparecer las pestañas:
-
-```txt
-Constants.h
-Globals.h
-Globals.cpp
-SerialBridge.h
-SerialBridge.cpp
-MotorController.h
-MotorController.cpp
-ServoController.h
-ServoController.cpp
-DistanceSensor.h
-DistanceSensor.cpp
-TelemetryManager.h
-TelemetryManager.cpp
-```
-
-## Conexion ESP32 con Arduino normal
-
-```txt
-ESP32 GPIO17 / TX2  ->  Arduino pin 2 / RX SoftwareSerial
-ESP32 GPIO16 / RX2  <-  Arduino pin 3 / TX SoftwareSerial
-ESP32 GND           <-> Arduino GND
-```
-
-Si el Arduino normal es de 5V, protege esta linea con divisor de voltaje:
-
-```txt
-Arduino pin 3 / TX -> ESP32 GPIO16 / RX2
-```
-
-## Configuracion que debes cambiar
-
-En el ESP32:
-
-```txt
-ESP32_ControladorComunicacion/Constants.h
-```
-
-Cambia:
+La comunicación Nano <-> ESP32 queda en **9600 baudios** porque Arduino Nano con `SoftwareSerial` en D10/D13 no es estable a 115200.
 
 ```cpp
-static const char WIFI_SSID[]     = "NOMBRE_WIFI";
-static const char WIFI_PASSWORD[] = "CLAVE_WIFI";
-static const char MQTT_BROKER_IP[] = "192.168.137.1";
+// Nano
+ESP32_SERIAL_BAUD = 9600
+
+// ESP32
+ARDUINO_SERIAL_BAUD = 9600
 ```
 
-En el Arduino normal:
+El Monitor Serial del ESP32 sigue en **115200**.
 
-```txt
-Arduino_Normal_ControlAuto/Constants.h
+## Qué corrige esta versión
+
+El ESP32 ahora acepta los dos formatos de telemetría:
+
+```text
+<0,0,90,7>
+0,0,90,7
 ```
 
-Cambia los pines de motor, servo y sensor si tu conexion fisica es distinta.
+Esto es intencional: si el Nano quedó con el sketch anterior y todavía manda CSV plano, el ESP32 igual podrá leerlo. Además `/telemetry` ahora incluye:
+
+```json
+"ignored_bytes", "serial_sample", "last_raw"
+```
+
+Si no hay telemetría válida, `serial_sample` mostrará qué bytes reales están entrando al RX2 del ESP32.
+
+## Prueba
+
+1. Sube el sketch del Nano.
+2. Sube el sketch del ESP32.
+3. Abre Monitor Serial del ESP32 a 115200.
+4. Entra a `http://IP_DEL_ESP32/telemetry`.
+
+Salida esperada:
+
+```json
+{"motor_der":0,"motor_izq":0,"servo":90,"distancia":7,"telemetry_ok":true}
+```
+
+Si `telemetry_ok` sigue en false, revisa el campo `serial_sample`.
+
+- Si ves algo como `0,0,90,7`, el ESP32 ya está leyendo CSV plano y esta versión debería parsearlo.
+- Si ves caracteres raros, el problema es señal física/ruido/baud o falta de GND común.
+- Si `serial_sample` está vacío, el ESP32 no está recibiendo nada desde el Nano.
