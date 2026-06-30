@@ -1,816 +1,1058 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Dashboard Integrado ESP32</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control Robot ESP32</title>
 
-    <style>
-        :root {
-            --bg: #0f172a;
-            --card: #111827;
-            --card2: #1f2937;
-            --text: #f9fafb;
-            --muted: #9ca3af;
-            --blue: #3b82f6;
-            --green: #22c55e;
-            --yellow: #facc15;
-            --red: #ef4444;
-            --border: #374151;
-        }
+  <style>
+    :root {
+      --bg: #090f1d;
+      --bg-soft: #0f172a;
+      --card: rgba(15, 23, 42, 0.88);
+      --card-strong: #111827;
+      --line: rgba(148, 163, 184, 0.22);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --muted-2: #64748b;
+      --blue: #38bdf8;
+      --blue-strong: #2563eb;
+      --green: #22c55e;
+      --yellow: #facc15;
+      --red: #ef4444;
+      --orange: #fb923c;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+      --radius-xl: 26px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --focus: 0 0 0 4px rgba(56, 189, 248, 0.2);
+    }
 
-        * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-        }
+    html {
+      scroll-behavior: smooth;
+    }
 
-        .container {
-            width: min(1200px, 95%);
-            margin: auto;
-            padding: 25px 0;
-        }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 10%, rgba(37, 99, 235, 0.35), transparent 32%),
+        radial-gradient(circle at 85% 5%, rgba(34, 197, 94, 0.16), transparent 26%),
+        radial-gradient(circle at 50% 90%, rgba(56, 189, 248, 0.12), transparent 34%),
+        var(--bg);
+    }
 
-        .header {
-            background: linear-gradient(135deg, #2563eb, #0f172a);
-            padding: 25px;
-            border-radius: 18px;
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
-        }
+    button,
+    input,
+    select {
+      font: inherit;
+    }
 
-        .header h1 { margin: 0; }
-        .header p { color: #dbeafe; }
+    button {
+      border: 0;
+    }
 
-        .connection, .buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-            margin-top: 15px;
-        }
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
 
-        input {
-            background: #020617;
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 10px;
-            font-size: 15px;
-        }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 22px;
+      align-items: stretch;
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.26), rgba(15, 23, 42, 0.94) 54%),
+        var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
 
-        input[type="range"] {
-            width: 100%;
-        }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      pointer-events: none;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent 36%);
+      opacity: 0.55;
+    }
 
-        button {
-            border: none;
-            border-radius: 12px;
-            padding: 12px 18px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+    .hero-content,
+    .hero-panel {
+      position: relative;
+      z-index: 1;
+    }
 
-        .btn-blue { background: var(--blue); color: white; }
-        .btn-green { background: var(--green); color: #052e16; }
-        .btn-yellow { background: var(--yellow); color: #422006; }
-        .btn-red { background: var(--red); color: white; }
-        .btn-gray { background: var(--card2); color: white; border: 1px solid var(--border); }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 7px 11px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 999px;
+      color: #bae6fd;
+      background: rgba(2, 6, 23, 0.35);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
 
-        .active {
-            outline: 3px solid white;
-        }
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.14);
+    }
 
-        .status {
-            padding: 9px 14px;
-            border-radius: 999px;
-            background: var(--card2);
-            border: 1px solid var(--border);
-            font-weight: bold;
-        }
+    .pulse.online {
+      background: var(--green);
+      box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.14);
+    }
 
-        .connected { color: var(--green); }
-        .disconnected { color: var(--red); }
+    h1 {
+      margin: 16px 0 10px;
+      font-size: clamp(30px, 5vw, 56px);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+    }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 18px;
-        }
+    .hero p {
+      max-width: 680px;
+      margin: 0;
+      color: #cbd5e1;
+      font-size: 16px;
+      line-height: 1.65;
+    }
 
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 20px;
-        }
+    .hero-panel {
+      display: grid;
+      align-content: center;
+      gap: 12px;
+      padding: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: var(--radius-lg);
+      background: rgba(2, 6, 23, 0.28);
+    }
 
-        .sensor-card { grid-column: span 4; }
-        .joy-card { grid-column: span 4; }
-        .manual-card { grid-column: span 4; }
-        .log-card { grid-column: span 12; }
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 0.75fr;
+      gap: 10px;
+    }
 
-        .distance-box, .center {
-            text-align: center;
-        }
+    .field {
+      display: grid;
+      gap: 6px;
+    }
 
-        .big {
-            font-size: 42px;
-            font-weight: bold;
-        }
+    label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
 
-        .distance {
-            font-size: 58px;
-            font-weight: bold;
-        }
+    input,
+    select {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      color: var(--text);
+      background: rgba(2, 6, 23, 0.56);
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
 
-        .unit {
-            font-size: 22px;
-            color: var(--muted);
-        }
+    input:focus,
+    select:focus {
+      border-color: rgba(56, 189, 248, 0.62);
+      box-shadow: var(--focus);
+    }
 
-        .bar {
-            height: 16px;
-            background: #020617;
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
 
-        .bar-fill {
-            height: 100%;
-            width: 0%;
-            background: var(--green);
-            transition: 0.2s;
-        }
+    .btn {
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: var(--radius-md);
+      color: var(--text);
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      cursor: pointer;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      transition: transform 0.14s ease, filter 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+      user-select: none;
+    }
 
-        .joystick-box {
-            width: 240px;
-            height: 240px;
-            margin: 15px auto;
-            background: #020617;
-            border: 2px solid var(--border);
-            border-radius: 20px;
-            position: relative;
-        }
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+      border-color: rgba(226, 232, 240, 0.25);
+    }
 
-        .axis-x, .axis-y {
-            position: absolute;
-            background: var(--border);
-        }
+    .btn:active {
+      transform: translateY(0) scale(0.99);
+    }
 
-        .axis-x {
-            width: 100%;
-            height: 2px;
-            top: 50%;
-            left: 0;
-        }
+    .btn-primary {
+      color: #03101d;
+      background: linear-gradient(135deg, #67e8f9, #38bdf8);
+      border-color: transparent;
+    }
 
-        .axis-y {
-            height: 100%;
-            width: 2px;
-            left: 50%;
-            top: 0;
-        }
+    .btn-danger {
+      color: white;
+      background: linear-gradient(135deg, #f97316, #ef4444);
+      border-color: transparent;
+    }
 
-        .dot {
-            width: 24px;
-            height: 24px;
-            background: var(--green);
-            border-radius: 50%;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
-        }
+    .btn-green {
+      color: #03240f;
+      background: linear-gradient(135deg, #86efac, #22c55e);
+      border-color: transparent;
+    }
 
-        .wheel {
-            width: 80px;
-            height: 80px;
-            border: 8px solid var(--blue);
-            border-radius: 50%;
-            margin: 12px auto;
-            position: relative;
-            transition: transform 0.2s;
-        }
+    .btn-ghost {
+      background: rgba(2, 6, 23, 0.3);
+    }
 
-        .wheel::before {
-            content: "";
-            width: 58px;
-            height: 8px;
-            background: var(--blue);
-            border-radius: 999px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
 
-        .row {
-            margin-bottom: 15px;
-        }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #dbeafe;
+      background: rgba(2, 6, 23, 0.32);
+      font-size: 13px;
+      font-weight: 800;
+    }
 
-        .label-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 6px;
-            align-items: center;
-        }
+    .chip strong {
+      color: white;
+    }
 
-        .badge {
-            background: #020617;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 5px 9px;
-            font-weight: bold;
-            min-width: 65px;
-            text-align: center;
-        }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
 
-        .double-input {
-            display: grid;
-            grid-template-columns: 1fr 80px;
-            gap: 8px;
-            align-items: center;
-        }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      padding: 22px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
 
-        .small {
-            color: var(--muted);
-            font-size: 14px;
-        }
+    .card h2 {
+      margin: 0 0 4px;
+      font-size: 22px;
+      letter-spacing: -0.035em;
+    }
 
-        .log {
-            background: #020617;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            font-family: monospace;
-            color: #d1d5db;
-        }
+    .card-subtitle {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
 
-        .disabled {
-            opacity: 0.45;
-            pointer-events: none;
-        }
+    .control-pad {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(80px, 1fr));
+      gap: 12px;
+      max-width: 390px;
+      margin: 0 auto;
+    }
 
-        @media (max-width: 950px) {
-            .sensor-card, .joy-card, .manual-card {
-                grid-column: span 12;
-            }
-        }
-    </style>
+    .pad-btn {
+      min-height: 78px;
+      border-radius: 22px;
+      font-size: 28px;
+      color: white;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0)),
+        rgba(30, 41, 59, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      cursor: pointer;
+      font-weight: 900;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 30px rgba(0,0,0,0.22);
+      transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+    }
+
+    .pad-btn:hover {
+      background: rgba(51, 65, 85, 0.98);
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    .pad-btn:active,
+    .pad-btn.is-pressed {
+      transform: translateY(1px) scale(0.98);
+      background: rgba(56, 189, 248, 0.28);
+      border-color: rgba(56, 189, 248, 0.8);
+    }
+
+    .pad-btn.stop {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0)),
+        rgba(239, 68, 68, 0.88);
+    }
+
+    .pad-spacer {
+      min-height: 78px;
+    }
+
+    .quick-controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .metric {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: rgba(2, 6, 23, 0.35);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .metric strong {
+      font-size: 34px;
+      letter-spacing: -0.04em;
+    }
+
+    .metric small {
+      color: var(--muted-2);
+      font-weight: 800;
+    }
+
+    .bar {
+      height: 12px;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.55);
+    }
+
+    .bar-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--green);
+      transition: width 0.22s ease, background 0.22s ease;
+    }
+
+    .manual-section {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .range-row {
+      display: grid;
+      grid-template-columns: 1fr 84px;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    input[type="range"] {
+      accent-color: var(--blue);
+    }
+
+    .log-card {
+      grid-column: 1 / -1;
+    }
+
+    .log {
+      min-height: 126px;
+      max-height: 210px;
+      overflow: auto;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: rgba(2, 6, 23, 0.58);
+      color: #cbd5e1;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .hint {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .kbd {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 24px;
+      height: 24px;
+      padding: 0 7px;
+      border: 1px solid var(--line);
+      border-bottom-color: rgba(148, 163, 184, 0.4);
+      border-radius: 7px;
+      color: #e2e8f0;
+      background: rgba(15, 23, 42, 0.92);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .warning {
+      padding: 12px 14px;
+      border: 1px solid rgba(250, 204, 21, 0.24);
+      border-radius: var(--radius-lg);
+      color: #fef3c7;
+      background: rgba(250, 204, 21, 0.08);
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .page {
+        width: min(100% - 20px, 1180px);
+        padding-top: 12px;
+      }
+
+      .hero,
+      .card {
+        padding: 16px;
+        border-radius: 20px;
+      }
+
+      .control-pad {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .pad-btn,
+      .pad-spacer {
+        min-height: 66px;
+      }
+
+      .telemetry-grid,
+      .quick-controls {
+        grid-template-columns: 1fr;
+      }
+
+      .range-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 
 <body>
-<div class="container">
-
-    <div class="header">
-        <h1>Dashboard Integrado ESP32</h1>
-        <p>Sensor ultrasónico, joystick, control directo de 4 ruedas y ángulo de giro.</p>
-
-        <div class="connection">
-            <span>IP ESP32:</span>
-            <input id="ipESP32" type="text" value="172.20.10.3">
-            <button id="btnConectar" class="btn-blue">Conectar</button>
-            <span id="estadoConexion" class="status disconnected">Desconectado</span>
+  <main class="page">
+    <section class="hero">
+      <div class="hero-content">
+        <div class="eyebrow">
+          <span id="connectionPulse" class="pulse"></span>
+          <span id="connectionText">Desconectado</span>
         </div>
 
-        <div class="buttons">
-            <button id="btnModoJoystick" class="btn-green active">Modo Joystick</button>
-            <button id="btnModoManual" class="btn-blue">Modo Manual 4 Ruedas</button>
-            <button id="btnMovimiento" class="btn-yellow">Movimiento: ACTIVO</button>
-            <button id="btnStop" class="btn-red">STOP</button>
+        <h1>Control del robot ESP32</h1>
+        <p>
+          Panel limpio para controlar el auto por HTTP o WebSocket. Para el código ESP32 que venimos usando,
+          selecciona <b>HTTP nativo</b> y envía comandos tipo <b>/control?cmd=w</b>.
+        </p>
+
+        <div class="status-row">
+          <span class="chip">Último comando: <strong id="lastCommand">--</strong></span>
+          <span class="chip">Modo: <strong id="modeLabel">HTTP</strong></span>
+          <span class="chip">Seguridad: <strong id="safeLabel">Activo</strong></span>
         </div>
-    </div>
+      </div>
 
-    <div class="grid">
+      <div class="hero-panel">
+        <div class="field-grid">
+          <div class="field">
+            <label for="ipESP32">IP del ESP32</label>
+            <input id="ipESP32" type="text" value="192.168.137.45" placeholder="Ej: 192.168.137.45" autocomplete="off" />
+          </div>
 
-        <div class="card sensor-card">
-            <h2>Ultrasónico</h2>
-
-            <div class="distance-box">
-                <span id="distanciaValue" class="distance">--</span>
-                <span class="unit">cm</span>
-                <h3 id="estadoDistancia">Esperando</h3>
-            </div>
-
-            <div class="bar">
-                <div id="distanciaBar" class="bar-fill"></div>
-            </div>
-
-            <br>
-
-            <div class="row">
-                <div class="label-row">
-                    <label>Distancia objetivo</label>
-                    <span class="badge"><span id="distObjText">30</span> cm</span>
-                </div>
-
-                <div class="double-input">
-                    <input id="distObj" type="range" min="5" max="150" value="30">
-                    <input id="distObjNum" type="number" min="5" max="150" value="30">
-                </div>
-            </div>
+          <div class="field">
+            <label for="transportMode">Comunicación</label>
+            <select id="transportMode">
+              <option value="http" selected>HTTP nativo /control?cmd=</option>
+              <option value="ws">WebSocket ws://IP:81</option>
+            </select>
+          </div>
         </div>
 
-        <div id="panelJoystick" class="card joy-card">
-            <h2>Joystick</h2>
-
-            <div class="joystick-box">
-                <div class="axis-x"></div>
-                <div class="axis-y"></div>
-                <div id="dot" class="dot"></div>
-            </div>
-
-            <div class="center">
-                <p>X: <b id="xValue">--</b></p>
-                <p>Y: <b id="yValue">--</b></p>
-                <p>Avance: <b id="avanceValue">0</b></p>
-                <p>Ángulo: <b id="anguloJoyValue">90</b>°</p>
-                <p id="direccionTexto" class="big" style="font-size: 22px;">Detenido</p>
-            </div>
-
-            <div class="bar">
-                <div id="avanceBar" class="bar-fill"></div>
-            </div>
+        <div class="field">
+          <label for="token">Token opcional</label>
+          <input id="token" type="text" value="" placeholder="Déjalo vacío si CONTROL_TOKEN está vacío" autocomplete="off" />
         </div>
 
-        <div id="panelManual" class="card manual-card disabled">
-            <h2>Manual 4 ruedas</h2>
+        <div class="actions">
+          <button id="btnConnect" class="btn btn-primary">Conectar / probar</button>
+          <button id="btnDisconnect" class="btn btn-ghost">Desconectar</button>
+          <button id="btnStopTop" class="btn btn-danger">STOP</button>
+        </div>
+      </div>
+    </section>
 
-            <div class="row">
-                <div class="label-row">
-                    <label>Delantera izquierda</label>
-                    <span class="badge"><span id="vDIText">0</span></span>
-                </div>
-                <div class="double-input">
-                    <input id="vDI" type="range" min="-255" max="255" step="5" value="0">
-                    <input id="vDINum" type="number" min="-255" max="255" step="5" value="0">
-                </div>
-            </div>
+    <section class="grid">
+      <article class="card">
+        <h2>Control principal</h2>
+        <p class="card-subtitle">
+          Usa los botones o el teclado. Mantén el control simple: avanzar, retroceder, girar y detener.
+        </p>
 
-            <div class="row">
-                <div class="label-row">
-                    <label>Delantera derecha</label>
-                    <span class="badge"><span id="vDDText">0</span></span>
-                </div>
-                <div class="double-input">
-                    <input id="vDD" type="range" min="-255" max="255" step="5" value="0">
-                    <input id="vDDNum" type="number" min="-255" max="255" step="5" value="0">
-                </div>
-            </div>
+        <div class="control-pad" aria-label="Control direccional">
+          <div class="pad-spacer"></div>
+          <button class="pad-btn" data-cmd="w" data-key="w" title="Avanzar">↑</button>
+          <div class="pad-spacer"></div>
 
-            <div class="row">
-                <div class="label-row">
-                    <label>Trasera izquierda</label>
-                    <span class="badge"><span id="vTIText">0</span></span>
-                </div>
-                <div class="double-input">
-                    <input id="vTI" type="range" min="-255" max="255" step="5" value="0">
-                    <input id="vTINum" type="number" min="-255" max="255" step="5" value="0">
-                </div>
-            </div>
+          <button class="pad-btn" data-cmd="a" data-key="a" title="Izquierda">←</button>
+          <button class="pad-btn stop" data-cmd="x" data-key="x" title="Detener">■</button>
+          <button class="pad-btn" data-cmd="d" data-key="d" title="Derecha">→</button>
 
-            <div class="row">
-                <div class="label-row">
-                    <label>Trasera derecha</label>
-                    <span class="badge"><span id="vTDText">0</span></span>
-                </div>
-                <div class="double-input">
-                    <input id="vTD" type="range" min="-255" max="255" step="5" value="0">
-                    <input id="vTDNum" type="number" min="-255" max="255" step="5" value="0">
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="label-row">
-                    <label>Ángulo de giro</label>
-                    <span class="badge"><span id="anguloManualText">90</span>°</span>
-                </div>
-
-                <div id="volante" class="wheel"></div>
-
-                <div class="double-input">
-                    <input id="anguloManual" type="range" min="0" max="180" value="90">
-                    <input id="anguloManualNum" type="number" min="0" max="180" value="90">
-                </div>
-            </div>
-
-            <div class="buttons">
-                <button id="btnAdelante" class="btn-green">Adelante</button>
-                <button id="btnAtras" class="btn-gray">Atrás</button>
-                <button id="btnCero" class="btn-red">Velocidad 0</button>
-                <button id="btnCentro" class="btn-blue">Centrar</button>
-            </div>
+          <div class="pad-spacer"></div>
+          <button class="pad-btn" data-cmd="s" data-key="s" title="Retroceder">↓</button>
+          <div class="pad-spacer"></div>
         </div>
 
-        <div class="card log-card">
-            <h2>Mensajes</h2>
-            <div id="log" class="log">Esperando conexión...</div>
-            <p class="small">Último comando enviado: <b id="ultimoComando">--</b></p>
+        <div class="quick-controls">
+          <button class="btn btn-ghost" data-cmd="q">Servo izquierda</button>
+          <button class="btn btn-ghost" data-cmd="e">Servo derecha</button>
+          <button class="btn btn-green" data-cmd="x">Detener</button>
         </div>
 
-    </div>
-</div>
+        <p class="hint">
+          Teclas: <span class="kbd">W</span> avanzar,
+          <span class="kbd">A</span> izquierda,
+          <span class="kbd">S</span> retroceder,
+          <span class="kbd">D</span> derecha,
+          <span class="kbd">X</span> detener,
+          <span class="kbd">Q</span>/<span class="kbd">E</span> servo.
+        </p>
+      </article>
 
-<script>
+      <article class="card">
+        <h2>Telemetría</h2>
+        <p class="card-subtitle">
+          En modo HTTP, el ESP32 actual solo responde comandos. La telemetría completa la publica por MQTT.
+          En modo WebSocket, se actualizará si tu ESP32 envía JSON o mensajes tipo <b>DIST:25</b>.
+        </p>
+
+        <div class="telemetry-grid">
+          <div class="metric">
+            <span>Distancia</span>
+            <strong id="distanceValue">--</strong>
+            <small>cm</small>
+            <div class="bar"><div id="distanceBar" class="bar-fill"></div></div>
+          </div>
+
+          <div class="metric">
+            <span>Estado</span>
+            <strong id="distanceState" style="font-size: 26px;">Sin datos</strong>
+            <small>sensor</small>
+            <div class="bar"><div id="stateBar" class="bar-fill"></div></div>
+          </div>
+
+          <div class="metric">
+            <span>Motor derecho</span>
+            <strong id="motorRight">--</strong>
+            <small>valor</small>
+          </div>
+
+          <div class="metric">
+            <span>Motor izquierdo</span>
+            <strong id="motorLeft">--</strong>
+            <small>valor</small>
+          </div>
+
+          <div class="metric">
+            <span>Servo</span>
+            <strong id="servoValue">--</strong>
+            <small>grados</small>
+          </div>
+
+          <div class="metric">
+            <span>Última actualización</span>
+            <strong id="lastTelemetryAt" style="font-size: 24px;">--</strong>
+            <small>hora</small>
+          </div>
+        </div>
+
+        <div id="httpTelemetryNotice" class="warning manual-section">
+          Con tu código ESP32 actual, esta página controla por HTTP. Para ver telemetría en el navegador necesitas
+          agregar un endpoint HTTP de sensores, un WebSocket en el ESP32 o MQTT sobre WebSocket en Mosquitto.
+        </div>
+      </article>
+
+      <article class="card log-card">
+        <h2>Registro</h2>
+        <p class="card-subtitle">
+          Aquí verás pruebas de conexión, comandos enviados y respuestas recibidas.
+        </p>
+        <div id="log" class="log">Esperando acción...</div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const UI = {
+      ip: $("ipESP32"),
+      token: $("token"),
+      mode: $("transportMode"),
+      connectionPulse: $("connectionPulse"),
+      connectionText: $("connectionText"),
+      modeLabel: $("modeLabel"),
+      safeLabel: $("safeLabel"),
+      lastCommand: $("lastCommand"),
+      log: $("log"),
+      distanceValue: $("distanceValue"),
+      distanceBar: $("distanceBar"),
+      distanceState: $("distanceState"),
+      stateBar: $("stateBar"),
+      motorRight: $("motorRight"),
+      motorLeft: $("motorLeft"),
+      servoValue: $("servoValue"),
+      lastTelemetryAt: $("lastTelemetryAt"),
+      httpTelemetryNotice: $("httpTelemetryNotice")
+    };
+
+    const STORAGE_KEYS = {
+      ip: "robot_esp32_ip",
+      token: "robot_esp32_token",
+      mode: "robot_esp32_mode"
+    };
+
+    const VALID_COMMANDS = new Set(["w", "a", "s", "d", "x", "q", "e"]);
+    const KEY_TO_CMD = {
+      "w": "w",
+      "arrowup": "w",
+      "a": "a",
+      "arrowleft": "a",
+      "s": "s",
+      "arrowdown": "s",
+      "d": "d",
+      "arrowright": "d",
+      "x": "x",
+      " ": "x",
+      "q": "q",
+      "e": "e"
+    };
+
     let ws = null;
-    let modo = "JOYSTICK";
-    let movimientoActivo = true;
+    let isConnected = false;
+    let lastSendAt = 0;
+    let lastKeyboardCmd = null;
+    const SEND_THROTTLE_MS = 90;
 
-    const INVERTIR_Y = true;
-    const JOY_MAX = 4095;
-    const JOY_CENTER = 2048;
-    const DEADZONE = 180;
-
-    let ultimoEnvioJoy = 0;
-    const INTERVALO_ENVIO_JOY = 80;
-
-    const $ = id => document.getElementById(id);
-
-    const ipESP32 = $("ipESP32");
-    const estadoConexion = $("estadoConexion");
-    const log = $("log");
-    const ultimoComando = $("ultimoComando");
-
-    const panelJoystick = $("panelJoystick");
-    const panelManual = $("panelManual");
-
-    const distanciaValue = $("distanciaValue");
-    const estadoDistancia = $("estadoDistancia");
-    const distanciaBar = $("distanciaBar");
-
-    const distObj = $("distObj");
-    const distObjNum = $("distObjNum");
-    const distObjText = $("distObjText");
-
-    const dot = $("dot");
-    const xValue = $("xValue");
-    const yValue = $("yValue");
-    const avanceValue = $("avanceValue");
-    const avanceBar = $("avanceBar");
-    const anguloJoyValue = $("anguloJoyValue");
-    const direccionTexto = $("direccionTexto");
-
-    const vDI = $("vDI");
-    const vDINum = $("vDINum");
-    const vDIText = $("vDIText");
-
-    const vDD = $("vDD");
-    const vDDNum = $("vDDNum");
-    const vDDText = $("vDDText");
-
-    const vTI = $("vTI");
-    const vTINum = $("vTINum");
-    const vTIText = $("vTIText");
-
-    const vTD = $("vTD");
-    const vTDNum = $("vTDNum");
-    const vTDText = $("vTDText");
-
-    const anguloManual = $("anguloManual");
-    const anguloManualNum = $("anguloManualNum");
-    const anguloManualText = $("anguloManualText");
-    const volante = $("volante");
-
-    const btnModoJoystick = $("btnModoJoystick");
-    const btnModoManual = $("btnModoManual");
-    const btnMovimiento = $("btnMovimiento");
-
-    function escribirLog(texto) {
-        const hora = new Date().toLocaleTimeString();
-        log.textContent = `[${hora}] ${texto}`;
+    function nowTime() {
+      return new Date().toLocaleTimeString();
     }
 
-    function conectar() {
-        const ip = ipESP32.value.trim();
+    function log(message, type = "info") {
+      const icon = {
+        info: "ℹ️",
+        ok: "✅",
+        warn: "⚠️",
+        error: "❌",
+        send: "➡️",
+        receive: "⬅️"
+      }[type] || "ℹ️";
 
-        if (!ip) {
-            escribirLog("Escribe la IP del ESP32.");
-            return;
-        }
-
-        if (ws) ws.close();
-
-        ws = new WebSocket(`ws://${ip}:81`);
-
-        ws.onopen = () => {
-            estadoConexion.textContent = "Conectado";
-            estadoConexion.className = "status connected";
-            escribirLog("Conectado al ESP32.");
-
-            cambiarModo("JOYSTICK");
-            enviarDistanciaObjetivo();
-        };
-
-        ws.onclose = () => {
-            estadoConexion.textContent = "Desconectado";
-            estadoConexion.className = "status disconnected";
-            escribirLog("Conexión cerrada.");
-        };
-
-        ws.onerror = () => {
-            estadoConexion.textContent = "Error";
-            estadoConexion.className = "status disconnected";
-            escribirLog("Error de conexión.");
-        };
-
-        ws.onmessage = e => procesarMensaje(e.data);
+      UI.log.textContent = `[${nowTime()}] ${icon} ${message}\n` + UI.log.textContent;
     }
 
-    function enviar(mensaje) {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(mensaje);
-            ultimoComando.textContent = mensaje;
-        }
+    function setConnectionState(connected, label) {
+      isConnected = connected;
+      UI.connectionPulse.classList.toggle("online", connected);
+      UI.connectionText.textContent = label || (connected ? "Conectado" : "Desconectado");
     }
 
-    function cambiarModo(nuevoModo) {
-        modo = nuevoModo;
-
-        if (modo === "JOYSTICK") {
-            btnModoJoystick.classList.add("active");
-            btnModoManual.classList.remove("active");
-
-            panelJoystick.classList.remove("disabled");
-            panelManual.classList.add("disabled");
-
-            enviar("MODO:JOYSTICK_WEB");
-        }
-
-        if (modo === "MANUAL") {
-            btnModoJoystick.classList.remove("active");
-            btnModoManual.classList.add("active");
-
-            panelJoystick.classList.add("disabled");
-            panelManual.classList.remove("disabled");
-
-            enviar("MODO:PC_4WD");
-            enviarControl4();
-        }
+    function getBaseHttpUrl() {
+      const ip = UI.ip.value.trim();
+      return `http://${ip}`;
     }
 
-    function procesarMensaje(mensaje) {
-        escribirLog(`Recibido: ${mensaje}`);
-
-        try {
-            const data = JSON.parse(mensaje);
-
-            if (data.distancia !== undefined) {
-                actualizarDistancia(Number(data.distancia));
-            }
-
-            if (data.x !== undefined && data.y !== undefined) {
-                manejarJoystick(Number(data.x), Number(data.y));
-            }
-
-            return;
-        } catch (e) {}
-
-        if (mensaje.startsWith("DIST:")) {
-            actualizarDistancia(Number(mensaje.replace("DIST:", "")));
-            return;
-        }
-
-        if (mensaje.startsWith("JOY:")) {
-            const partes = mensaje.replace("JOY:", "").split(",");
-            manejarJoystick(Number(partes[0]), Number(partes[1]));
-            return;
-        }
+    function getWsUrl() {
+      const ip = UI.ip.value.trim();
+      return `ws://${ip}:81`;
     }
 
-    function manejarJoystick(x, y) {
-        if (Number.isNaN(x) || Number.isNaN(y)) return;
+    function getTokenQuery() {
+      const token = UI.token.value.trim();
+      return token ? `&token=${encodeURIComponent(token)}` : "";
+    }
 
-        const avance = calcularAvance(y);
-        const angulo = calcularAngulo(x);
+    function saveSettings() {
+      localStorage.setItem(STORAGE_KEYS.ip, UI.ip.value.trim());
+      localStorage.setItem(STORAGE_KEYS.token, UI.token.value.trim());
+      localStorage.setItem(STORAGE_KEYS.mode, UI.mode.value);
+    }
 
-        actualizarJoystickVisual(x, y, avance, angulo);
+    function loadSettings() {
+      const savedIp = localStorage.getItem(STORAGE_KEYS.ip);
+      const savedToken = localStorage.getItem(STORAGE_KEYS.token);
+      const savedMode = localStorage.getItem(STORAGE_KEYS.mode);
 
-        if (modo !== "JOYSTICK") return;
+      if (savedIp) UI.ip.value = savedIp;
+      if (savedToken) UI.token.value = savedToken;
+      if (savedMode) UI.mode.value = savedMode;
 
-        if (!movimientoActivo) {
-            enviar("STOP");
-            return;
+      updateModeUI();
+    }
+
+    function updateModeUI() {
+      const mode = UI.mode.value;
+      UI.modeLabel.textContent = mode.toUpperCase();
+      UI.httpTelemetryNotice.classList.toggle("hidden", mode !== "http");
+      UI.safeLabel.textContent = UI.token.value.trim() ? "Token" : "Básico";
+    }
+
+    async function connectOrTest() {
+      saveSettings();
+      updateModeUI();
+
+      if (!UI.ip.value.trim()) {
+        log("Escribe la IP del ESP32.", "warn");
+        return;
+      }
+
+      if (UI.mode.value === "http") {
+        await testHttpConnection();
+        return;
+      }
+
+      connectWebSocket();
+    }
+
+    async function testHttpConnection() {
+      const url = `${getBaseHttpUrl()}/control?cmd=x${getTokenQuery()}`;
+
+      log(`Probando HTTP con STOP: ${url}`, "info");
+
+      try {
+        const response = await fetch(url, { method: "GET", cache: "no-store" });
+        const text = await response.text();
+
+        if (!response.ok) {
+          setConnectionState(false, "Error HTTP");
+          log(`HTTP respondió ${response.status}: ${text || "sin cuerpo"}`, "error");
+          return;
         }
 
-        const ahora = Date.now();
-
-        if (ahora - ultimoEnvioJoy >= INTERVALO_ENVIO_JOY) {
-            enviar(`JOY_CTRL:${avance},${angulo}`);
-            ultimoEnvioJoy = ahora;
-        }
+        setConnectionState(true, "HTTP listo");
+        UI.lastCommand.textContent = "x";
+        log(`Conexión HTTP correcta. Respuesta: ${text || "OK"}`, "ok");
+      } catch (error) {
+        setConnectionState(false, "Sin conexión");
+        log(`No se pudo conectar por HTTP. Revisa IP, WiFi y CORS. Detalle: ${error.message}`, "error");
+      }
     }
 
-    function calcularAvance(y) {
-        let diferencia = y - JOY_CENTER;
+    function connectWebSocket() {
+      disconnect();
 
-        if (Math.abs(diferencia) < DEADZONE) {
-            return 0;
-        }
+      const url = getWsUrl();
+      log(`Conectando WebSocket: ${url}`, "info");
 
-        if (INVERTIR_Y) {
-            diferencia = diferencia * -1;
-        }
+      try {
+        ws = new WebSocket(url);
+      } catch (error) {
+        setConnectionState(false, "Error WS");
+        log(`No se pudo crear WebSocket: ${error.message}`, "error");
+        return;
+      }
 
-        let avance = Math.round((diferencia / JOY_CENTER) * 255);
+      ws.onopen = () => {
+        setConnectionState(true, "WebSocket listo");
+        log("WebSocket conectado.", "ok");
+      };
 
-        if (avance > 255) avance = 255;
-        if (avance < -255) avance = -255;
+      ws.onclose = () => {
+        setConnectionState(false, "WebSocket cerrado");
+        log("WebSocket cerrado.", "warn");
+      };
 
-        return avance;
+      ws.onerror = () => {
+        setConnectionState(false, "Error WS");
+        log("Error en WebSocket.", "error");
+      };
+
+      ws.onmessage = (event) => {
+        log(`Recibido: ${event.data}`, "receive");
+        parseTelemetry(event.data);
+      };
     }
 
-    function calcularAngulo(x) {
-        let angulo = Math.round((x * 180) / JOY_MAX);
+    function disconnect() {
+      if (ws) {
+        ws.close();
+        ws = null;
+      }
 
-        if (angulo < 0) angulo = 0;
-        if (angulo > 180) angulo = 180;
-
-        return angulo;
+      setConnectionState(false, "Desconectado");
     }
 
-    function actualizarJoystickVisual(x, y, avance, angulo) {
-        xValue.textContent = x;
-        yValue.textContent = y;
-        avanceValue.textContent = avance;
-        anguloJoyValue.textContent = angulo;
+    async function sendCommand(command) {
+      command = String(command || "").toLowerCase();
 
-        const boxSize = 240;
+      if (!VALID_COMMANDS.has(command)) {
+        log(`Comando inválido: ${command}`, "warn");
+        return;
+      }
 
-        dot.style.left = `${(x / JOY_MAX) * boxSize}px`;
-        dot.style.top = `${(y / JOY_MAX) * boxSize}px`;
+      saveSettings();
 
-        const porcentaje = ((avance + 255) / 510) * 100;
-        avanceBar.style.width = `${porcentaje}%`;
+      const elapsed = Date.now() - lastSendAt;
+      if (elapsed < SEND_THROTTLE_MS && command !== "x") return;
+      lastSendAt = Date.now();
 
-        if (avance > 20) {
-            direccionTexto.textContent = "Avanzando";
-            direccionTexto.style.color = "var(--green)";
-            avanceBar.style.background = "var(--green)";
-        } else if (avance < -20) {
-            direccionTexto.textContent = "Retrocediendo";
-            direccionTexto.style.color = "var(--red)";
-            avanceBar.style.background = "var(--red)";
-        } else {
-            direccionTexto.textContent = "Detenido";
-            direccionTexto.style.color = "var(--yellow)";
-            avanceBar.style.background = "var(--yellow)";
-        }
+      UI.lastCommand.textContent = command;
+      highlightButton(command);
+
+      if (UI.mode.value === "http") {
+        await sendHttpCommand(command);
+        return;
+      }
+
+      sendWsCommand(command);
     }
 
-    function actualizarDistancia(cm) {
-        if (Number.isNaN(cm)) return;
+    async function sendHttpCommand(command) {
+      const url = `${getBaseHttpUrl()}/control?cmd=${encodeURIComponent(command)}${getTokenQuery()}`;
 
-        distanciaValue.textContent = cm.toFixed(1);
+      try {
+        const response = await fetch(url, { method: "GET", cache: "no-store" });
+        const text = await response.text();
 
-        const porcentaje = Math.max(0, Math.min(100, (cm / 200) * 100));
-        distanciaBar.style.width = `${porcentaje}%`;
-
-        if (cm < 10) {
-            estadoDistancia.textContent = "Muy cerca";
-            estadoDistancia.style.color = "var(--red)";
-            distanciaBar.style.background = "var(--red)";
-        } else if (cm < 25) {
-            estadoDistancia.textContent = "Precaución";
-            estadoDistancia.style.color = "var(--yellow)";
-            distanciaBar.style.background = "var(--yellow)";
-        } else {
-            estadoDistancia.textContent = "Seguro";
-            estadoDistancia.style.color = "var(--green)";
-            distanciaBar.style.background = "var(--green)";
-        }
-    }
-
-    function enviarDistanciaObjetivo() {
-        enviar(`DIST_OBJ:${distObj.value}`);
-    }
-
-    function enviarControl4() {
-        if (modo !== "MANUAL") return;
-
-        if (!movimientoActivo) {
-            enviar("STOP");
-            return;
+        if (!response.ok) {
+          setConnectionState(false, "Error HTTP");
+          log(`Comando ${command} rechazado. HTTP ${response.status}: ${text || "sin cuerpo"}`, "error");
+          return;
         }
 
-        const comando = `CTRL4:${vDI.value},${vDD.value},${vTI.value},${vTD.value},${anguloManual.value}`;
-        enviar(comando);
+        setConnectionState(true, "HTTP listo");
+        log(`Comando enviado por HTTP: ${command}`, "send");
+      } catch (error) {
+        setConnectionState(false, "Sin conexión");
+        log(`Fallo enviando ${command}. Detalle: ${error.message}`, "error");
+      }
     }
 
-    function actualizarManualUI() {
-        vDIText.textContent = vDI.value;
-        vDDText.textContent = vDD.value;
-        vTIText.textContent = vTI.value;
-        vTDText.textContent = vTD.value;
+    function sendWsCommand(command) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        log("WebSocket no está conectado.", "warn");
+        setConnectionState(false, "Desconectado");
+        return;
+      }
 
-        anguloManualText.textContent = anguloManual.value;
-        volante.style.transform = `rotate(${Number(anguloManual.value) - 90}deg)`;
-
-        distObjText.textContent = distObj.value;
+      ws.send(command);
+      log(`Comando enviado por WebSocket: ${command}`, "send");
     }
 
-    function sync(range, number, min, max, callback) {
-        range.addEventListener("input", () => {
-            number.value = range.value;
-            callback();
+    function highlightButton(command) {
+      document.querySelectorAll("[data-cmd]").forEach((button) => {
+        button.classList.toggle("is-pressed", button.dataset.cmd === command);
+      });
+
+      setTimeout(() => {
+        document.querySelectorAll("[data-cmd]").forEach((button) => {
+          button.classList.remove("is-pressed");
         });
-
-        number.addEventListener("change", () => {
-            let valor = Number(number.value);
-
-            if (Number.isNaN(valor)) valor = 0;
-
-            valor = Math.max(min, Math.min(max, valor));
-
-            number.value = valor;
-            range.value = valor;
-
-            callback();
-        });
+      }, 160);
     }
 
-    function setVelocidadTodas(valor) {
-        vDI.value = valor;
-        vDD.value = valor;
-        vTI.value = valor;
-        vTD.value = valor;
+    function parseTelemetry(message) {
+      let data = null;
 
-        vDINum.value = valor;
-        vDDNum.value = valor;
-        vTINum.value = valor;
-        vTDNum.value = valor;
+      try {
+        data = JSON.parse(message);
+      } catch (_) {
+        data = parseTextTelemetry(message);
+      }
 
-        actualizarManualUI();
-        enviarControl4();
+      if (!data) return;
+
+      if (data.distancia !== undefined) updateDistance(Number(data.distancia));
+      if (data.motor_der !== undefined) UI.motorRight.textContent = data.motor_der;
+      if (data.motor_izq !== undefined) UI.motorLeft.textContent = data.motor_izq;
+      if (data.servo !== undefined) UI.servoValue.textContent = data.servo;
+
+      UI.lastTelemetryAt.textContent = nowTime();
     }
 
-    function stopTotal() {
-        movimientoActivo = false;
-        btnMovimiento.textContent = "Movimiento: DETENIDO";
-        btnMovimiento.className = "btn-red";
+    function parseTextTelemetry(message) {
+      if (message.startsWith("DIST:")) {
+        return { distancia: Number(message.replace("DIST:", "")) };
+      }
 
-        setVelocidadTodas(0);
-        enviar("STOP");
+      // Formato compatible con Arduino -> ESP32:
+      // motor_der,motor_izq,servo,distancia
+      if (/^-?\d+,-?\d+,-?\d+,-?\d+(\.\d+)?$/.test(message.trim())) {
+        const [motor_der, motor_izq, servo, distancia] = message.split(",").map(Number);
+        return { motor_der, motor_izq, servo, distancia };
+      }
+
+      return null;
     }
 
-    btnModoJoystick.addEventListener("click", () => cambiarModo("JOYSTICK"));
-    btnModoManual.addEventListener("click", () => cambiarModo("MANUAL"));
+    function updateDistance(cm) {
+      if (Number.isNaN(cm)) return;
 
-    btnMovimiento.addEventListener("click", () => {
-        movimientoActivo = !movimientoActivo;
+      UI.distanceValue.textContent = cm.toFixed(1);
 
-        if (movimientoActivo) {
-            btnMovimiento.textContent = "Movimiento: ACTIVO";
-            btnMovimiento.className = "btn-yellow";
+      const percent = Math.max(0, Math.min(100, (cm / 200) * 100));
+      UI.distanceBar.style.width = `${percent}%`;
 
-            if (modo === "JOYSTICK") enviar("MODO:JOYSTICK_WEB");
-            if (modo === "MANUAL") enviarControl4();
-        } else {
-            btnMovimiento.textContent = "Movimiento: DETENIDO";
-            btnMovimiento.className = "btn-red";
-            enviar("STOP");
+      if (cm < 10) {
+        UI.distanceState.textContent = "Muy cerca";
+        UI.distanceState.style.color = "var(--red)";
+        UI.distanceBar.style.background = "var(--red)";
+        UI.stateBar.style.width = "25%";
+        UI.stateBar.style.background = "var(--red)";
+      } else if (cm < 25) {
+        UI.distanceState.textContent = "Precaución";
+        UI.distanceState.style.color = "var(--yellow)";
+        UI.distanceBar.style.background = "var(--yellow)";
+        UI.stateBar.style.width = "60%";
+        UI.stateBar.style.background = "var(--yellow)";
+      } else {
+        UI.distanceState.textContent = "Seguro";
+        UI.distanceState.style.color = "var(--green)";
+        UI.distanceBar.style.background = "var(--green)";
+        UI.stateBar.style.width = "100%";
+        UI.stateBar.style.background = "var(--green)";
+      }
+    }
+
+    function bindEvents() {
+      $("btnConnect").addEventListener("click", connectOrTest);
+      $("btnDisconnect").addEventListener("click", disconnect);
+      $("btnStopTop").addEventListener("click", () => sendCommand("x"));
+
+      UI.mode.addEventListener("change", () => {
+        saveSettings();
+        updateModeUI();
+        disconnect();
+      });
+
+      UI.token.addEventListener("input", () => {
+        saveSettings();
+        updateModeUI();
+      });
+
+      UI.ip.addEventListener("change", saveSettings);
+
+      document.querySelectorAll("[data-cmd]").forEach((button) => {
+        button.addEventListener("click", () => sendCommand(button.dataset.cmd));
+      });
+
+      document.addEventListener("keydown", (event) => {
+        const targetTag = (event.target && event.target.tagName || "").toLowerCase();
+        if (targetTag === "input" || targetTag === "select" || targetTag === "textarea") return;
+
+        const key = event.key.toLowerCase();
+        const command = KEY_TO_CMD[key];
+
+        if (!command) return;
+
+        event.preventDefault();
+
+        if (lastKeyboardCmd === command && command !== "x") return;
+
+        lastKeyboardCmd = command;
+        sendCommand(command);
+      });
+
+      document.addEventListener("keyup", (event) => {
+        const key = event.key.toLowerCase();
+        const command = KEY_TO_CMD[key];
+
+        if (!command) return;
+        lastKeyboardCmd = null;
+
+        // Al soltar una tecla de movimiento, se detiene el auto.
+        if (["w", "a", "s", "d", "arrowup", "arrowleft", "arrowdown", "arrowright"].includes(key)) {
+          sendCommand("x");
         }
-    });
+      });
+    }
 
-    $("btnStop").addEventListener("click", stopTotal);
-
-    $("btnConectar").addEventListener("click", conectar);
-
-    $("btnAdelante").addEventListener("click", () => setVelocidadTodas(120));
-    $("btnAtras").addEventListener("click", () => setVelocidadTodas(-120));
-    $("btnCero").addEventListener("click", () => setVelocidadTodas(0));
-
-    $("btnCentro").addEventListener("click", () => {
-        anguloManual.value = 90;
-        anguloManualNum.value = 90;
-        actualizarManualUI();
-        enviarControl4();
-    });
-
-    sync(vDI, vDINum, -255, 255, () => { actualizarManualUI(); enviarControl4(); });
-    sync(vDD, vDDNum, -255, 255, () => { actualizarManualUI(); enviarControl4(); });
-    sync(vTI, vTINum, -255, 255, () => { actualizarManualUI(); enviarControl4(); });
-    sync(vTD, vTDNum, -255, 255, () => { actualizarManualUI(); enviarControl4(); });
-
-    sync(anguloManual, anguloManualNum, 0, 180, () => {
-        actualizarManualUI();
-        enviarControl4();
-    });
-
-    sync(distObj, distObjNum, 5, 150, () => {
-        actualizarManualUI();
-        enviarDistanciaObjetivo();
-    });
-
-    actualizarManualUI();
-    conectar();
-</script>
+    loadSettings();
+    bindEvents();
+    log("Dashboard listo. Elige HTTP para el código ESP32 actual.", "ok");
+  </script>
 </body>
 </html>
