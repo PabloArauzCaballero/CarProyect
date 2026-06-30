@@ -28,18 +28,44 @@ void loop() {
 }
 
 void readCommandFromESP32() {
-  if (!Serial.available()) return;
+  while (Serial.available() > 0) {
+    char command = Serial.read();
 
-  char command = Serial.read();
+    if (command == '\n' || command == '\r' || command == ' ') {
+      continue;
+    }
 
-  switch (command) {
-    case 'w': moveForward(); break;
-    case 's': moveBackward(); break;
-    case 'a': turnLeft(); break;
-    case 'd': turnRight(); break;
-    case 'x': stopMotors(); break;
-    case 'q': moveServoLeft(); break;
-    case 'e': moveServoRight(); break;
-    default: break;
+    switch (command) {
+      case 'w':
+        moveForward();
+        break;
+
+      case 's':
+        moveBackward();
+        break;
+
+      case 'a':
+        turnLeft();
+        break;
+
+      case 'd':
+        turnRight();
+        break;
+
+      case 'x':
+        stopMotors();
+        break;
+
+      case 'q':
+        moveServoLeft();
+        break;
+
+      case 'e':
+        moveServoRight();
+        break;
+
+      default:
+        break;
+    }
   }
 }

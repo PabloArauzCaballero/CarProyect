@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,507 +7,335 @@
 
   <style>
     :root {
-      --bg: #090f1d;
-      --bg-soft: #0f172a;
-      --card: rgba(15, 23, 42, 0.88);
-      --card-strong: #111827;
-      --line: rgba(148, 163, 184, 0.22);
+      --bg: #070d1a;
+      --panel: #101827;
+      --panel-2: #0b1220;
+      --border: #263248;
       --text: #f8fafc;
-      --muted: #94a3b8;
-      --muted-2: #64748b;
-      --blue: #38bdf8;
-      --blue-strong: #2563eb;
-      --green: #22c55e;
-      --yellow: #facc15;
-      --red: #ef4444;
-      --orange: #fb923c;
-      --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
-      --radius-xl: 26px;
-      --radius-lg: 20px;
-      --radius-md: 14px;
-      --focus: 0 0 0 4px rgba(56, 189, 248, 0.2);
+      --muted: #9aa7bd;
+      --accent: #50d6ff;
+      --danger: #ff4b35;
+      --success: #2ee67b;
+      --warning: #ffd166;
+      --shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+      --radius: 28px;
     }
 
     * {
       box-sizing: border-box;
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
-
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
       background:
-        radial-gradient(circle at 15% 10%, rgba(37, 99, 235, 0.35), transparent 32%),
-        radial-gradient(circle at 85% 5%, rgba(34, 197, 94, 0.16), transparent 26%),
-        radial-gradient(circle at 50% 90%, rgba(56, 189, 248, 0.12), transparent 34%),
+        radial-gradient(circle at top left, rgba(80, 214, 255, 0.18), transparent 35%),
+        radial-gradient(circle at top right, rgba(46, 230, 123, 0.16), transparent 30%),
         var(--bg);
-    }
-
-    button,
-    input,
-    select {
-      font: inherit;
-    }
-
-    button {
-      border: 0;
+      color: var(--text);
     }
 
     .page {
       width: min(1180px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 28px 0 40px;
+      padding: 32px 0;
     }
 
     .hero {
-      position: relative;
-      overflow: hidden;
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 22px;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 24px;
       align-items: stretch;
-      padding: 26px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-xl);
-      background:
-        linear-gradient(135deg, rgba(37, 99, 235, 0.26), rgba(15, 23, 42, 0.94) 54%),
-        var(--card);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-    }
-
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: -1px;
-      pointer-events: none;
-      border-radius: inherit;
-      background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent 36%);
-      opacity: 0.55;
-    }
-
-    .hero-content,
-    .hero-panel {
-      position: relative;
-      z-index: 1;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      width: fit-content;
-      padding: 7px 11px;
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      border-radius: 999px;
-      color: #bae6fd;
-      background: rgba(2, 6, 23, 0.35);
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-    }
-
-    .pulse {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--red);
-      box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.14);
-    }
-
-    .pulse.online {
-      background: var(--green);
-      box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.14);
-    }
-
-    h1 {
-      margin: 16px 0 10px;
-      font-size: clamp(30px, 5vw, 56px);
-      line-height: 0.95;
-      letter-spacing: -0.06em;
-    }
-
-    .hero p {
-      max-width: 680px;
-      margin: 0;
-      color: #cbd5e1;
-      font-size: 16px;
-      line-height: 1.65;
-    }
-
-    .hero-panel {
-      display: grid;
-      align-content: center;
-      gap: 12px;
-      padding: 18px;
-      border: 1px solid rgba(148, 163, 184, 0.16);
-      border-radius: var(--radius-lg);
-      background: rgba(2, 6, 23, 0.28);
-    }
-
-    .field-grid {
-      display: grid;
-      grid-template-columns: 1fr 0.75fr;
-      gap: 10px;
-    }
-
-    .field {
-      display: grid;
-      gap: 6px;
-    }
-
-    label {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: 0.02em;
-    }
-
-    input,
-    select {
-      width: 100%;
-      min-height: 44px;
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      color: var(--text);
-      background: rgba(2, 6, 23, 0.56);
-      outline: none;
-      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-    }
-
-    input:focus,
-    select:focus {
-      border-color: rgba(56, 189, 248, 0.62);
-      box-shadow: var(--focus);
-    }
-
-    .actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .btn {
-      min-height: 44px;
-      padding: 0 16px;
-      border-radius: var(--radius-md);
-      color: var(--text);
-      background: rgba(30, 41, 59, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      cursor: pointer;
-      font-weight: 900;
-      letter-spacing: -0.01em;
-      transition: transform 0.14s ease, filter 0.14s ease, border-color 0.14s ease, background 0.14s ease;
-      user-select: none;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.08);
-      border-color: rgba(226, 232, 240, 0.25);
-    }
-
-    .btn:active {
-      transform: translateY(0) scale(0.99);
-    }
-
-    .btn-primary {
-      color: #03101d;
-      background: linear-gradient(135deg, #67e8f9, #38bdf8);
-      border-color: transparent;
-    }
-
-    .btn-danger {
-      color: white;
-      background: linear-gradient(135deg, #f97316, #ef4444);
-      border-color: transparent;
-    }
-
-    .btn-green {
-      color: #03240f;
-      background: linear-gradient(135deg, #86efac, #22c55e);
-      border-color: transparent;
-    }
-
-    .btn-ghost {
-      background: rgba(2, 6, 23, 0.3);
-    }
-
-    .status-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 12px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      color: #dbeafe;
-      background: rgba(2, 6, 23, 0.32);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .chip strong {
-      color: white;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: 18px;
-      margin-top: 18px;
+      margin-bottom: 24px;
     }
 
     .card {
-      border: 1px solid var(--line);
-      border-radius: var(--radius-xl);
-      padding: 22px;
-      background: var(--card);
+      background: linear-gradient(180deg, rgba(16, 24, 39, 0.98), rgba(11, 18, 32, 0.98));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(16px);
+      padding: 28px;
     }
 
-    .card h2 {
-      margin: 0 0 4px;
-      font-size: 22px;
-      letter-spacing: -0.035em;
+    h1, h2, h3, p {
+      margin-top: 0;
     }
 
-    .card-subtitle {
-      margin: 0 0 18px;
+    h1 {
+      font-size: clamp(38px, 7vw, 80px);
+      line-height: 0.95;
+      margin-bottom: 18px;
+      letter-spacing: -0.06em;
+    }
+
+    h2 {
+      font-size: 30px;
+      margin-bottom: 10px;
+      letter-spacing: -0.03em;
+    }
+
+    .muted {
       color: var(--muted);
-      line-height: 1.5;
+      line-height: 1.55;
+      font-size: 17px;
+    }
+
+    .status-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(7, 13, 26, 0.6);
+      font-weight: 700;
       font-size: 14px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--danger);
+    }
+
+    .dot.ok {
+      background: var(--success);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 210px;
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #070d1a;
+      color: var(--text);
+      border-radius: 18px;
+      padding: 16px 18px;
+      font-size: 18px;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(80, 214, 255, 0.12);
+    }
+
+    .token-row {
+      margin-top: 16px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 16px;
+      padding: 15px 20px;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--text);
+      background: #182235;
+      cursor: pointer;
+      transition: transform 0.08s ease, filter 0.15s ease, background 0.15s ease;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    button:hover {
+      filter: brightness(1.08);
+    }
+
+    button:active {
+      transform: translateY(2px) scale(0.99);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #06101a;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ff7a1a, var(--danger));
+      color: white;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1.45fr;
+      gap: 24px;
+      align-items: start;
     }
 
     .control-pad {
       display: grid;
-      grid-template-columns: repeat(3, minmax(80px, 1fr));
+      grid-template-columns: repeat(3, 88px);
+      grid-template-rows: repeat(3, 78px);
       gap: 12px;
-      max-width: 390px;
-      margin: 0 auto;
+      justify-content: center;
+      margin: 28px 0 18px;
     }
 
-    .pad-btn {
-      min-height: 78px;
+    .control-pad button {
+      font-size: 34px;
+      padding: 0;
       border-radius: 22px;
-      font-size: 28px;
-      color: white;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0)),
-        rgba(30, 41, 59, 0.95);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      cursor: pointer;
-      font-weight: 900;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 30px rgba(0,0,0,0.22);
-      transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+      background: #172238;
     }
 
-    .pad-btn:hover {
-      background: rgba(51, 65, 85, 0.98);
-      border-color: rgba(56, 189, 248, 0.35);
+    .control-pad .up {
+      grid-column: 2;
+      grid-row: 1;
     }
 
-    .pad-btn:active,
-    .pad-btn.is-pressed {
-      transform: translateY(1px) scale(0.98);
-      background: rgba(56, 189, 248, 0.28);
-      border-color: rgba(56, 189, 248, 0.8);
+    .control-pad .left {
+      grid-column: 1;
+      grid-row: 2;
     }
 
-    .pad-btn.stop {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0)),
-        rgba(239, 68, 68, 0.88);
+    .control-pad .stop {
+      grid-column: 2;
+      grid-row: 2;
+      background: var(--danger);
     }
 
-    .pad-spacer {
-      min-height: 78px;
+    .control-pad .right {
+      grid-column: 3;
+      grid-row: 2;
     }
 
-    .quick-controls {
+    .control-pad .down {
+      grid-column: 2;
+      grid-row: 3;
+    }
+
+    .servo-row {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
       margin-top: 16px;
     }
 
     .telemetry-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 22px;
     }
 
     .metric {
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      background: rgba(2, 6, 23, 0.35);
+      background: #080f20;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 22px;
+      min-height: 128px;
     }
 
-    .metric span {
-      display: block;
+    .metric-label {
       color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-      margin-bottom: 6px;
+      font-weight: 900;
+      margin-bottom: 14px;
     }
 
-    .metric strong {
+    .metric-value {
       font-size: 34px;
-      letter-spacing: -0.04em;
+      font-weight: 950;
+      letter-spacing: -0.05em;
     }
 
-    .metric small {
-      color: var(--muted-2);
-      font-weight: 800;
+    .metric-unit {
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 900;
+      margin-left: 4px;
     }
 
     .bar {
-      height: 12px;
-      margin-top: 12px;
-      overflow: hidden;
+      width: 100%;
+      height: 14px;
+      border: 1px solid var(--border);
       border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(2, 6, 23, 0.55);
-    }
-
-    .bar-fill {
-      width: 0%;
-      height: 100%;
-      border-radius: inherit;
-      background: var(--green);
-      transition: width 0.22s ease, background 0.22s ease;
-    }
-
-    .manual-section {
+      overflow: hidden;
       margin-top: 18px;
-      padding-top: 18px;
-      border-top: 1px solid var(--line);
+      background: #050a14;
     }
 
-    .range-row {
-      display: grid;
-      grid-template-columns: 1fr 84px;
-      gap: 10px;
-      align-items: center;
-      margin-top: 10px;
+    .bar > span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--success);
+      transition: width 0.2s ease;
     }
 
-    input[type="range"] {
-      accent-color: var(--blue);
-    }
-
-    .log-card {
-      grid-column: 1 / -1;
-    }
-
-    .log {
-      min-height: 126px;
-      max-height: 210px;
+    .log-box {
+      margin-top: 18px;
+      background: #050a14;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      max-height: 240px;
       overflow: auto;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      background: rgba(2, 6, 23, 0.58);
-      color: #cbd5e1;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 13px;
-      line-height: 1.55;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 14px;
+      color: #d7deea;
       white-space: pre-wrap;
     }
 
     .hint {
-      margin: 12px 0 0;
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.55;
+      font-size: 15px;
+      line-height: 1.5;
+      margin-top: 14px;
     }
 
-    .kbd {
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      min-width: 24px;
-      height: 24px;
-      padding: 0 7px;
-      border: 1px solid var(--line);
-      border-bottom-color: rgba(148, 163, 184, 0.4);
-      border-radius: 7px;
-      color: #e2e8f0;
-      background: rgba(15, 23, 42, 0.92);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 12px;
-      font-weight: 900;
-    }
-
-    .warning {
-      padding: 12px 14px;
-      border: 1px solid rgba(250, 204, 21, 0.24);
-      border-radius: var(--radius-lg);
-      color: #fef3c7;
-      background: rgba(250, 204, 21, 0.08);
-      line-height: 1.55;
-      font-size: 13px;
-    }
-
-    .hidden {
-      display: none;
+    .danger-text {
+      color: #ffb3a8;
+      font-weight: 800;
     }
 
     @media (max-width: 900px) {
-      .hero,
-      .grid {
+      .hero, .layout, .form-grid {
         grid-template-columns: 1fr;
       }
 
-      .field-grid {
+      .telemetry-grid {
         grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 520px) {
-      .page {
-        width: min(100% - 20px, 1180px);
-        padding-top: 12px;
-      }
-
-      .hero,
-      .card {
-        padding: 16px;
-        border-radius: 20px;
       }
 
       .control-pad {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-      }
-
-      .pad-btn,
-      .pad-spacer {
-        min-height: 66px;
-      }
-
-      .telemetry-grid,
-      .quick-controls {
-        grid-template-columns: 1fr;
-      }
-
-      .range-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, 78px);
+        grid-template-rows: repeat(3, 70px);
       }
     }
   </style>
@@ -517,222 +344,243 @@
 <body>
   <main class="page">
     <section class="hero">
-      <div class="hero-content">
-        <div class="eyebrow">
-          <span id="connectionPulse" class="pulse"></span>
-          <span id="connectionText">Desconectado</span>
-        </div>
-
-        <h1>Control del robot ESP32</h1>
-        <p>
-          Panel limpio para controlar el auto por HTTP o WebSocket. Para el código ESP32 que venimos usando,
-          selecciona <b>HTTP nativo</b> y envía comandos tipo <b>/control?cmd=w</b>.
+      <article class="card">
+        <h1>Control Robot ESP32</h1>
+        <p class="muted">
+          Panel para controlar el auto usando el ESP32 como puente hacia el Arduino Nano.
+          En modo HTTP se envían comandos a <strong>/control?cmd=</strong> y se leen sensores desde
+          <strong>/telemetry</strong>.
         </p>
 
-        <div class="status-row">
-          <span class="chip">Último comando: <strong id="lastCommand">--</strong></span>
-          <span class="chip">Modo: <strong id="modeLabel">HTTP</strong></span>
-          <span class="chip">Seguridad: <strong id="safeLabel">Activo</strong></span>
+        <div class="status-line">
+          <span class="pill">
+            <span id="connectionDot" class="dot"></span>
+            <span id="connectionText">Desconectado</span>
+          </span>
+          <span class="pill">Último comando: <span id="lastCommand">--</span></span>
+          <span class="pill">Modo: <span id="modeLabel">HTTP</span></span>
         </div>
-      </div>
+      </article>
 
-      <div class="hero-panel">
-        <div class="field-grid">
-          <div class="field">
-            <label for="ipESP32">IP del ESP32</label>
-            <input id="ipESP32" type="text" value="192.168.137.45" placeholder="Ej: 192.168.137.45" autocomplete="off" />
+      <article class="card">
+        <div class="form-grid">
+          <div>
+            <label for="ipInput">IP del ESP32</label>
+            <input id="ipInput" type="text" value="192.168.100.85" placeholder="Ej: 192.168.100.85" />
           </div>
 
-          <div class="field">
-            <label for="transportMode">Comunicación</label>
-            <select id="transportMode">
-              <option value="http" selected>HTTP nativo /control?cmd=</option>
+          <div>
+            <label for="modeSelect">Comunicación</label>
+            <select id="modeSelect">
+              <option value="http" selected>HTTP nativo</option>
               <option value="ws">WebSocket ws://IP:81</option>
             </select>
           </div>
         </div>
 
-        <div class="field">
-          <label for="token">Token opcional</label>
-          <input id="token" type="text" value="" placeholder="Déjalo vacío si CONTROL_TOKEN está vacío" autocomplete="off" />
+        <div class="token-row">
+          <label for="tokenInput">Token opcional</label>
+          <input id="tokenInput" type="text" placeholder="Déjalo vacío si CONTROL_TOKEN está vacío" />
         </div>
 
-        <div class="actions">
-          <button id="btnConnect" class="btn btn-primary">Conectar / probar</button>
-          <button id="btnDisconnect" class="btn btn-ghost">Desconectar</button>
-          <button id="btnStopTop" class="btn btn-danger">STOP</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="grid">
-      <article class="card">
-        <h2>Control principal</h2>
-        <p class="card-subtitle">
-          Usa los botones o el teclado. Mantén el control simple: avanzar, retroceder, girar y detener.
-        </p>
-
-        <div class="control-pad" aria-label="Control direccional">
-          <div class="pad-spacer"></div>
-          <button class="pad-btn" data-cmd="w" data-key="w" title="Avanzar">↑</button>
-          <div class="pad-spacer"></div>
-
-          <button class="pad-btn" data-cmd="a" data-key="a" title="Izquierda">←</button>
-          <button class="pad-btn stop" data-cmd="x" data-key="x" title="Detener">■</button>
-          <button class="pad-btn" data-cmd="d" data-key="d" title="Derecha">→</button>
-
-          <div class="pad-spacer"></div>
-          <button class="pad-btn" data-cmd="s" data-key="s" title="Retroceder">↓</button>
-          <div class="pad-spacer"></div>
-        </div>
-
-        <div class="quick-controls">
-          <button class="btn btn-ghost" data-cmd="q">Servo izquierda</button>
-          <button class="btn btn-ghost" data-cmd="e">Servo derecha</button>
-          <button class="btn btn-green" data-cmd="x">Detener</button>
+        <div class="button-row">
+          <button id="connectButton" class="btn-primary" type="button">Conectar / probar</button>
+          <button id="disconnectButton" class="btn-outline" type="button">Desconectar</button>
+          <button id="stopButton" class="btn-danger" type="button">STOP</button>
         </div>
 
         <p class="hint">
-          Teclas: <span class="kbd">W</span> avanzar,
-          <span class="kbd">A</span> izquierda,
-          <span class="kbd">S</span> retroceder,
-          <span class="kbd">D</span> derecha,
-          <span class="kbd">X</span> detener,
-          <span class="kbd">Q</span>/<span class="kbd">E</span> servo.
+          Recomendado: primero prueba en el navegador <strong>http://IP_DEL_ESP32/telemetry</strong>.
+          Si eso no devuelve JSON, la web no podrá mostrar datos.
+        </p>
+      </article>
+    </section>
+
+    <section class="layout">
+      <article class="card">
+        <h2>Control principal</h2>
+        <p class="muted">
+          Usa los botones o el teclado. W avanzar, A izquierda, S retroceder, D derecha,
+          X detener, Q/E mover servo.
+        </p>
+
+        <div class="control-pad">
+          <button class="up movement-button" data-cmd="w" type="button">↑</button>
+          <button class="left movement-button" data-cmd="a" type="button">←</button>
+          <button class="stop" data-cmd="x" type="button">■</button>
+          <button class="right movement-button" data-cmd="d" type="button">→</button>
+          <button class="down movement-button" data-cmd="s" type="button">↓</button>
+        </div>
+
+        <div class="servo-row">
+          <button id="servoLeftButton" class="btn-outline" data-cmd="q" type="button">Servo izquierda</button>
+          <button id="servoRightButton" class="btn-outline" data-cmd="e" type="button">Servo derecha</button>
+        </div>
+
+        <div class="button-row">
+          <button class="btn-danger" data-cmd="x" type="button">Detener</button>
+        </div>
+
+        <p class="hint">
+          Si el ESP32 dice que envía comandos pero el Nano no se mueve, revisa baudrate, GND común,
+          TX/RX cruzados y alimentación de motores.
         </p>
       </article>
 
       <article class="card">
         <h2>Telemetría</h2>
-        <p class="card-subtitle">
-          En modo HTTP, el ESP32 actual solo responde comandos. La telemetría completa la publica por MQTT.
-          En modo WebSocket, se actualizará si tu ESP32 envía JSON o mensajes tipo <b>DIST:25</b>.
+        <p class="muted">
+          Esta vista consulta <strong>/telemetry</strong> cada 700 ms. El ESP32 debe responder JSON:
+          <strong>{"motor_der":0,"motor_izq":0,"servo":90,"distancia":7}</strong>.
         </p>
 
         <div class="telemetry-grid">
           <div class="metric">
-            <span>Distancia</span>
-            <strong id="distanceValue">--</strong>
-            <small>cm</small>
-            <div class="bar"><div id="distanceBar" class="bar-fill"></div></div>
+            <div class="metric-label">Distancia</div>
+            <span id="distanceValue" class="metric-value">--</span>
+            <span class="metric-unit">cm</span>
+            <div class="bar"><span id="distanceBar"></span></div>
           </div>
 
           <div class="metric">
-            <span>Estado</span>
-            <strong id="distanceState" style="font-size: 26px;">Sin datos</strong>
-            <small>sensor</small>
-            <div class="bar"><div id="stateBar" class="bar-fill"></div></div>
+            <div class="metric-label">Estado</div>
+            <span id="sensorState" class="metric-value">Sin datos</span>
+            <span class="metric-unit">sensor</span>
+            <div class="bar"><span id="stateBar"></span></div>
           </div>
 
           <div class="metric">
-            <span>Motor derecho</span>
-            <strong id="motorRight">--</strong>
-            <small>valor</small>
+            <div class="metric-label">Motor derecho</div>
+            <span id="motorRight" class="metric-value">--</span>
+            <span class="metric-unit">valor</span>
           </div>
 
           <div class="metric">
-            <span>Motor izquierdo</span>
-            <strong id="motorLeft">--</strong>
-            <small>valor</small>
+            <div class="metric-label">Motor izquierdo</div>
+            <span id="motorLeft" class="metric-value">--</span>
+            <span class="metric-unit">valor</span>
           </div>
 
           <div class="metric">
-            <span>Servo</span>
-            <strong id="servoValue">--</strong>
-            <small>grados</small>
+            <div class="metric-label">Servo</div>
+            <span id="servoValue" class="metric-value">--</span>
+            <span class="metric-unit">grados</span>
           </div>
 
           <div class="metric">
-            <span>Última actualización</span>
-            <strong id="lastTelemetryAt" style="font-size: 24px;">--</strong>
-            <small>hora</small>
+            <div class="metric-label">Última actualización</div>
+            <span id="lastTelemetryAt" class="metric-value">--</span>
+            <span class="metric-unit">hora</span>
           </div>
         </div>
 
-        <div id="httpTelemetryNotice" class="warning manual-section">
-          Con tu código ESP32 actual, esta página controla por HTTP. Para ver telemetría en el navegador necesitas
-          agregar un endpoint HTTP de sensores, un WebSocket en el ESP32 o MQTT sobre WebSocket en Mosquitto.
-        </div>
-      </article>
-
-      <article class="card log-card">
-        <h2>Registro</h2>
-        <p class="card-subtitle">
-          Aquí verás pruebas de conexión, comandos enviados y respuestas recibidas.
-        </p>
-        <div id="log" class="log">Esperando acción...</div>
+        <h2 style="margin-top: 28px;">Registro</h2>
+        <p class="muted">Aquí verás pruebas de conexión, comandos enviados y respuestas recibidas.</p>
+        <div id="logBox" class="log-box">Esperando acción...</div>
       </article>
     </section>
   </main>
 
   <script>
-    const $ = (id) => document.getElementById(id);
-
     const UI = {
-      ip: $("ipESP32"),
-      token: $("token"),
-      mode: $("transportMode"),
-      connectionPulse: $("connectionPulse"),
-      connectionText: $("connectionText"),
-      modeLabel: $("modeLabel"),
-      safeLabel: $("safeLabel"),
-      lastCommand: $("lastCommand"),
-      log: $("log"),
-      distanceValue: $("distanceValue"),
-      distanceBar: $("distanceBar"),
-      distanceState: $("distanceState"),
-      stateBar: $("stateBar"),
-      motorRight: $("motorRight"),
-      motorLeft: $("motorLeft"),
-      servoValue: $("servoValue"),
-      lastTelemetryAt: $("lastTelemetryAt"),
-      httpTelemetryNotice: $("httpTelemetryNotice")
-    };
-
-    const STORAGE_KEYS = {
-      ip: "robot_esp32_ip",
-      token: "robot_esp32_token",
-      mode: "robot_esp32_mode"
-    };
-
-    const VALID_COMMANDS = new Set(["w", "a", "s", "d", "x", "q", "e"]);
-    const KEY_TO_CMD = {
-      "w": "w",
-      "arrowup": "w",
-      "a": "a",
-      "arrowleft": "a",
-      "s": "s",
-      "arrowdown": "s",
-      "d": "d",
-      "arrowright": "d",
-      "x": "x",
-      " ": "x",
-      "q": "q",
-      "e": "e"
+      ip: document.getElementById("ipInput"),
+      mode: document.getElementById("modeSelect"),
+      token: document.getElementById("tokenInput"),
+      connectButton: document.getElementById("connectButton"),
+      disconnectButton: document.getElementById("disconnectButton"),
+      stopButton: document.getElementById("stopButton"),
+      connectionDot: document.getElementById("connectionDot"),
+      connectionText: document.getElementById("connectionText"),
+      modeLabel: document.getElementById("modeLabel"),
+      lastCommand: document.getElementById("lastCommand"),
+      distanceValue: document.getElementById("distanceValue"),
+      distanceBar: document.getElementById("distanceBar"),
+      stateBar: document.getElementById("stateBar"),
+      sensorState: document.getElementById("sensorState"),
+      motorRight: document.getElementById("motorRight"),
+      motorLeft: document.getElementById("motorLeft"),
+      servoValue: document.getElementById("servoValue"),
+      lastTelemetryAt: document.getElementById("lastTelemetryAt"),
+      logBox: document.getElementById("logBox")
     };
 
     let ws = null;
     let isConnected = false;
-    let lastSendAt = 0;
-    let lastKeyboardCmd = null;
     let telemetryPollId = null;
+    let lastSendAt = 0;
+    let activeMovementKey = null;
 
     const SEND_THROTTLE_MS = 90;
     const TELEMETRY_POLL_MS = 700;
+    const VALID_COMMANDS = new Set(["w", "a", "s", "d", "x", "q", "e"]);
+    const MOVEMENT_COMMANDS = new Set(["w", "a", "s", "d"]);
 
     function nowTime() {
       return new Date().toLocaleTimeString();
     }
 
+    function log(message, type = "info") {
+      const prefix = type === "error"
+        ? "ERROR"
+        : type === "warn"
+          ? "AVISO"
+          : "INFO";
+
+      const previous = UI.logBox.textContent === "Esperando acción..."
+        ? ""
+        : UI.logBox.textContent + "\n";
+
+      UI.logBox.textContent = `${previous}[${nowTime()}] ${prefix}: ${message}`;
+      UI.logBox.scrollTop = UI.logBox.scrollHeight;
+    }
+
+    function cleanIpValue() {
+      let ip = UI.ip.value.trim();
+
+      ip = ip.replace("http://", "");
+      ip = ip.replace("https://", "");
+      ip = ip.replace("ws://", "");
+      ip = ip.replace("wss://", "");
+      ip = ip.replace(/\/+$/, "");
+
+      return ip;
+    }
+
+    function getBaseHttpUrl() {
+      return `http://${cleanIpValue()}`;
+    }
+
+    function getWsUrl() {
+      return `ws://${cleanIpValue()}:81`;
+    }
+
+    function getTokenQueryPrefix() {
+      const token = UI.token.value.trim();
+      return token ? `&token=${encodeURIComponent(token)}` : "";
+    }
+
     function getTelemetryUrl() {
       const token = UI.token.value.trim();
       const query = token ? `?token=${encodeURIComponent(token)}` : "";
-
       return `${getBaseHttpUrl()}/telemetry${query}`;
     }
 
+    function getControlUrl(command) {
+      return `${getBaseHttpUrl()}/control?cmd=${encodeURIComponent(command)}${getTokenQueryPrefix()}`;
+    }
+
+    function setConnectionState(connected, text) {
+      isConnected = connected;
+      UI.connectionDot.classList.toggle("ok", connected);
+      UI.connectionText.textContent = text || (connected ? "Conectado" : "Desconectado");
+    }
+
+    function updateModeLabel() {
+      UI.modeLabel.textContent = UI.mode.value === "http" ? "HTTP" : "WebSocket";
+    }
+
     function stopTelemetryPolling() {
-      if (telemetryPollId) {
+      if (telemetryPollId !== null) {
         clearInterval(telemetryPollId);
         telemetryPollId = null;
       }
@@ -740,9 +588,133 @@
 
     function startTelemetryPolling() {
       stopTelemetryPolling();
-
       fetchTelemetryHttp();
       telemetryPollId = setInterval(fetchTelemetryHttp, TELEMETRY_POLL_MS);
+    }
+
+    function updateDistance(distance) {
+      if (!Number.isFinite(distance)) {
+        UI.distanceValue.textContent = "--";
+        UI.distanceBar.style.width = "0%";
+        return;
+      }
+
+      UI.distanceValue.textContent = distance;
+
+      const safeDistance = Math.max(0, Math.min(distance, 100));
+      const percent = Math.max(0, Math.min(100, 100 - safeDistance));
+
+      UI.distanceBar.style.width = `${percent}%`;
+    }
+
+    function updateSensorState(distance) {
+      if (!Number.isFinite(distance)) {
+        UI.sensorState.textContent = "Sin datos";
+        UI.stateBar.style.width = "0%";
+        return;
+      }
+
+      if (distance > 0 && distance <= 15) {
+        UI.sensorState.textContent = "Cerca";
+        UI.stateBar.style.width = "90%";
+        return;
+      }
+
+      if (distance > 15 && distance <= 40) {
+        UI.sensorState.textContent = "Medio";
+        UI.stateBar.style.width = "55%";
+        return;
+      }
+
+      if (distance > 40) {
+        UI.sensorState.textContent = "Libre";
+        UI.stateBar.style.width = "25%";
+        return;
+      }
+
+      UI.sensorState.textContent = "Sin lectura";
+      UI.stateBar.style.width = "8%";
+    }
+
+    function normalizeTelemetryKeys(data) {
+      if (!data || typeof data !== "object") return null;
+
+      return {
+        motor_der: data.motor_der ?? data.motorRight ?? data.rightMotor ?? data.md,
+        motor_izq: data.motor_izq ?? data.motorLeft ?? data.leftMotor ?? data.mi,
+        servo: data.servo ?? data.servoValue,
+        distancia: data.distancia ?? data.distance ?? data.dist
+      };
+    }
+
+    function parseTextTelemetry(text) {
+      const clean = String(text).trim();
+
+      if (!clean) return null;
+
+      if (clean.includes(",")) {
+        const parts = clean.split(",").map((part) => part.trim());
+
+        if (parts.length >= 4) {
+          return {
+            motor_der: Number(parts[0]),
+            motor_izq: Number(parts[1]),
+            servo: Number(parts[2]),
+            distancia: Number(parts[3])
+          };
+        }
+      }
+
+      const distMatch = clean.match(/DIST\s*:\s*(\d+)/i);
+      if (distMatch) {
+        return {
+          distancia: Number(distMatch[1])
+        };
+      }
+
+      return null;
+    }
+
+    function applyTelemetry(rawData) {
+      let data = null;
+
+      if (typeof rawData === "object" && rawData !== null) {
+        data = normalizeTelemetryKeys(rawData);
+      } else {
+        const text = String(rawData).trim();
+
+        try {
+          data = normalizeTelemetryKeys(JSON.parse(text));
+        } catch (_) {
+          data = parseTextTelemetry(text);
+        }
+      }
+
+      if (!data) {
+        log(`Telemetría ignorada: ${String(rawData).slice(0, 120)}`, "warn");
+        return;
+      }
+
+      const distance = Number(data.distancia);
+
+      if (data.distancia !== undefined) {
+        updateDistance(distance);
+        updateSensorState(distance);
+      }
+
+      if (data.motor_der !== undefined) {
+        UI.motorRight.textContent = data.motor_der;
+      }
+
+      if (data.motor_izq !== undefined) {
+        UI.motorLeft.textContent = data.motor_izq;
+      }
+
+      if (data.servo !== undefined) {
+        UI.servoValue.textContent = data.servo;
+      }
+
+      UI.lastTelemetryAt.textContent = nowTime();
     }
 
     async function fetchTelemetryHttp() {
@@ -757,136 +729,61 @@
         const text = await response.text();
 
         if (!response.ok) {
-          setConnectionState(false, "Error sensores");
-          log(`No se pudo leer telemetría. HTTP ${response.status}: ${text || "sin cuerpo"}`, "warn");
+          setConnectionState(false, "Error telemetría");
+          log(`No se pudo leer /telemetry. HTTP ${response.status}: ${text || "sin cuerpo"}`, "warn");
           return;
         }
 
-        parseTelemetry(text);
-        setConnectionState(true, "HTTP + sensores");
+        applyTelemetry(text);
+        setConnectionState(true, "HTTP conectado");
       } catch (error) {
-        setConnectionState(false, "Sin sensores");
-        log(`Fallo leyendo telemetría: ${error.message}`, "warn");
+        setConnectionState(false, "Sin conexión HTTP");
+        log(`Fallo leyendo /telemetry: ${error.message}`, "warn");
       }
-    }
-
-    function log(message, type = "info") {
-      const icon = {
-        info: "ℹ️",
-        ok: "✅",
-        warn: "⚠️",
-        error: "❌",
-        send: "➡️",
-        receive: "⬅️"
-      }[type] || "ℹ️";
-
-      UI.log.textContent = `[${nowTime()}] ${icon} ${message}\n` + UI.log.textContent;
-    }
-
-    function setConnectionState(connected, label) {
-      isConnected = connected;
-      UI.connectionPulse.classList.toggle("online", connected);
-      UI.connectionText.textContent = label || (connected ? "Conectado" : "Desconectado");
-    }
-
-    function getBaseHttpUrl() {
-      const ip = UI.ip.value.trim();
-      return `http://${ip}`;
-    }
-
-    function getWsUrl() {
-      const ip = UI.ip.value.trim();
-      return `ws://${ip}:81`;
-    }
-
-    function getTokenQuery() {
-      const token = UI.token.value.trim();
-      return token ? `&token=${encodeURIComponent(token)}` : "";
-    }
-
-    function saveSettings() {
-      localStorage.setItem(STORAGE_KEYS.ip, UI.ip.value.trim());
-      localStorage.setItem(STORAGE_KEYS.token, UI.token.value.trim());
-      localStorage.setItem(STORAGE_KEYS.mode, UI.mode.value);
-    }
-
-    function loadSettings() {
-      const savedIp = localStorage.getItem(STORAGE_KEYS.ip);
-      const savedToken = localStorage.getItem(STORAGE_KEYS.token);
-      const savedMode = localStorage.getItem(STORAGE_KEYS.mode);
-
-      if (savedIp) UI.ip.value = savedIp;
-      if (savedToken) UI.token.value = savedToken;
-      if (savedMode) UI.mode.value = savedMode;
-
-      updateModeUI();
-    }
-
-    function updateModeUI() {
-      const mode = UI.mode.value;
-      UI.modeLabel.textContent = mode.toUpperCase();
-      UI.httpTelemetryNotice.classList.toggle("hidden", mode !== "http");
-      UI.safeLabel.textContent = UI.token.value.trim() ? "Token" : "Básico";
-    }
-
-    async function connectOrTest() {
-      saveSettings();
-      updateModeUI();
-
-      if (!UI.ip.value.trim()) {
-        log("Escribe la IP del ESP32.", "warn");
-        return;
-      }
-
-      if (UI.mode.value === "http") {
-        await testHttpConnection();
-        return;
-      }
-
-      connectWebSocket();
     }
 
     async function testHttpConnection() {
-      const url = `${getBaseHttpUrl()}/control?cmd=x${getTokenQuery()}`;
-
-      log(`Probando HTTP con STOP: ${url}`, "info");
+      log(`Probando telemetría: ${getTelemetryUrl()}`);
 
       try {
-        const response = await fetch(url, { method: "GET", cache: "no-store" });
+        const response = await fetch(getTelemetryUrl(), {
+          method: "GET",
+          cache: "no-store"
+        });
+
         const text = await response.text();
 
         if (!response.ok) {
-          setConnectionState(false, "Error HTTP");
-          log(`HTTP respondió ${response.status}: ${text || "sin cuerpo"}`, "error");
-          return;
+          setConnectionState(false, "HTTP con error");
+          log(`ESP32 respondió HTTP ${response.status}: ${text || "sin cuerpo"}`, "error");
+          return false;
         }
 
-        setConnectionState(true, "HTTP listo");
-        UI.lastCommand.textContent = "x";
-        log(`Conexión HTTP correcta. Respuesta: ${text || "OK"}`, "ok");
+        applyTelemetry(text);
+        setConnectionState(true, "HTTP conectado");
+        log(`Telemetría recibida: ${text}`);
+        return true;
       } catch (error) {
-        setConnectionState(false, "Sin conexión");
-        log(`No se pudo conectar por HTTP. Revisa IP, WiFi y CORS. Detalle: ${error.message}`, "error");
+        setConnectionState(false, "HTTP no responde");
+        log(`No se pudo conectar al ESP32 por HTTP: ${error.message}`, "error");
+        return false;
       }
     }
 
     function connectWebSocket() {
-      disconnect();
-
-      const url = getWsUrl();
-      log(`Conectando WebSocket: ${url}`, "info");
-
-      try {
-        ws = new WebSocket(url);
-      } catch (error) {
-        setConnectionState(false, "Error WS");
-        log(`No se pudo crear WebSocket: ${error.message}`, "error");
-        return;
+      if (ws) {
+        ws.close();
+        ws = null;
       }
 
+      const url = getWsUrl();
+      log(`Conectando WebSocket: ${url}`);
+
+      ws = new WebSocket(url);
+
       ws.onopen = () => {
-        setConnectionState(true, "WebSocket listo");
-        log("WebSocket conectado.", "ok");
+        setConnectionState(true, "WebSocket conectado");
+        log("WebSocket conectado.");
       };
 
       ws.onclose = () => {
@@ -895,14 +792,30 @@
       };
 
       ws.onerror = () => {
-        setConnectionState(false, "Error WS");
+        setConnectionState(false, "Error WebSocket");
         log("Error en WebSocket.", "error");
       };
 
       ws.onmessage = (event) => {
-        log(`Recibido: ${event.data}`, "receive");
-        parseTelemetry(event.data);
+        applyTelemetry(event.data);
       };
+    }
+
+    async function connectOrTest() {
+      updateModeLabel();
+
+      if (UI.mode.value === "http") {
+        const ok = await testHttpConnection();
+
+        if (ok) {
+          startTelemetryPolling();
+        }
+
+        return;
+      }
+
+      stopTelemetryPolling();
+      connectWebSocket();
     }
 
     function disconnect() {
@@ -914,200 +827,156 @@
       }
 
       setConnectionState(false, "Desconectado");
+      log("Desconectado.");
     }
 
-    async function sendCommand(command) {
-      command = String(command || "").toLowerCase();
-
-      if (!VALID_COMMANDS.has(command)) {
-        log(`Comando inválido: ${command}`, "warn");
-        return;
-      }
-
-      saveSettings();
-
-      const elapsed = Date.now() - lastSendAt;
-      if (elapsed < SEND_THROTTLE_MS && command !== "x") return;
-      lastSendAt = Date.now();
-
-      UI.lastCommand.textContent = command;
-      highlightButton(command);
-
-      if (UI.mode.value === "http") {
-        await testHttpConnection();
-        startTelemetryPolling();
-        return;
-      }
-      sendWsCommand(command);
-    }
-
-    async function sendHttpCommand(command) {
-      const url = `${getBaseHttpUrl()}/control?cmd=${encodeURIComponent(command)}${getTokenQuery()}`;
+    async function sendCommandHttp(command) {
+      const url = getControlUrl(command);
 
       try {
-        const response = await fetch(url, { method: "GET", cache: "no-store" });
+        const response = await fetch(url, {
+          method: "GET",
+          cache: "no-store"
+        });
+
         const text = await response.text();
 
         if (!response.ok) {
-          setConnectionState(false, "Error HTTP");
-          log(`Comando ${command} rechazado. HTTP ${response.status}: ${text || "sin cuerpo"}`, "error");
-          return;
+          setConnectionState(false, "Error comando");
+          log(`Comando '${command}' falló. HTTP ${response.status}: ${text || "sin cuerpo"}`, "error");
+          return false;
         }
 
-        setConnectionState(true, "HTTP listo");
-        log(`Comando enviado por HTTP: ${command}`, "send");
+        setConnectionState(true, "HTTP conectado");
+        log(`Comando enviado: ${command}. Respuesta: ${text || "OK"}`);
+        return true;
       } catch (error) {
-        setConnectionState(false, "Sin conexión");
-        log(`Fallo enviando ${command}. Detalle: ${error.message}`, "error");
+        setConnectionState(false, "Sin conexión HTTP");
+        log(`No se pudo enviar comando '${command}': ${error.message}`, "error");
+        return false;
       }
     }
 
-    function sendWsCommand(command) {
+    function sendCommandWs(command) {
       if (!ws || ws.readyState !== WebSocket.OPEN) {
         log("WebSocket no está conectado.", "warn");
-        setConnectionState(false, "Desconectado");
-        return;
+        return false;
       }
 
       ws.send(command);
-      log(`Comando enviado por WebSocket: ${command}`, "send");
+      log(`Comando enviado por WebSocket: ${command}`);
+      return true;
     }
 
-    function highlightButton(command) {
-      document.querySelectorAll("[data-cmd]").forEach((button) => {
-        button.classList.toggle("is-pressed", button.dataset.cmd === command);
-      });
+    async function sendCommand(command, options = {}) {
+      if (!VALID_COMMANDS.has(command)) {
+        log(`Comando inválido bloqueado: ${command}`, "warn");
+        return;
+      }
 
-      setTimeout(() => {
-        document.querySelectorAll("[data-cmd]").forEach((button) => {
-          button.classList.remove("is-pressed");
+      const now = Date.now();
+      const force = options.force === true;
+
+      if (!force && now - lastSendAt < SEND_THROTTLE_MS) {
+        return;
+      }
+
+      lastSendAt = now;
+      UI.lastCommand.textContent = command;
+
+      if (UI.mode.value === "http") {
+        await sendCommandHttp(command);
+      } else {
+        sendCommandWs(command);
+      }
+    }
+
+    function bindButtons() {
+      document.querySelectorAll("[data-cmd]").forEach((button) => {
+        const command = button.dataset.cmd;
+
+        button.addEventListener("click", () => {
+          if (!MOVEMENT_COMMANDS.has(command)) {
+            sendCommand(command, { force: true });
+          }
         });
-      }, 160);
-    }
-
-    function parseTelemetry(message) {
-      let data = null;
-
-      if (typeof message === "object" && message !== null) {
-        data = message;
-      } else {
-        try {
-          data = JSON.parse(String(message));
-        } catch (_) {
-          data = parseTextTelemetry(String(message));
-        }
-      }
-
-      if (!data) return;
-
-      if (data.distancia !== undefined) updateDistance(Number(data.distancia));
-      if (data.motor_der !== undefined) UI.motorRight.textContent = data.motor_der;
-      if (data.motor_izq !== undefined) UI.motorLeft.textContent = data.motor_izq;
-      if (data.servo !== undefined) UI.servoValue.textContent = data.servo;
-
-      UI.lastTelemetryAt.textContent = nowTime();
-    }
-
-    function parseTextTelemetry(message) {
-      if (message.startsWith("DIST:")) {
-        return { distancia: Number(message.replace("DIST:", "")) };
-      }
-
-      // Formato compatible con Arduino -> ESP32:
-      // motor_der,motor_izq,servo,distancia
-      if (/^-?\d+,-?\d+,-?\d+,-?\d+(\.\d+)?$/.test(message.trim())) {
-        const [motor_der, motor_izq, servo, distancia] = message.split(",").map(Number);
-        return { motor_der, motor_izq, servo, distancia };
-      }
-
-      return null;
-    }
-
-    function updateDistance(cm) {
-      if (Number.isNaN(cm)) return;
-
-      UI.distanceValue.textContent = cm.toFixed(1);
-
-      const percent = Math.max(0, Math.min(100, (cm / 200) * 100));
-      UI.distanceBar.style.width = `${percent}%`;
-
-      if (cm < 10) {
-        UI.distanceState.textContent = "Muy cerca";
-        UI.distanceState.style.color = "var(--red)";
-        UI.distanceBar.style.background = "var(--red)";
-        UI.stateBar.style.width = "25%";
-        UI.stateBar.style.background = "var(--red)";
-      } else if (cm < 25) {
-        UI.distanceState.textContent = "Precaución";
-        UI.distanceState.style.color = "var(--yellow)";
-        UI.distanceBar.style.background = "var(--yellow)";
-        UI.stateBar.style.width = "60%";
-        UI.stateBar.style.background = "var(--yellow)";
-      } else {
-        UI.distanceState.textContent = "Seguro";
-        UI.distanceState.style.color = "var(--green)";
-        UI.distanceBar.style.background = "var(--green)";
-        UI.stateBar.style.width = "100%";
-        UI.stateBar.style.background = "var(--green)";
-      }
-    }
-
-    function bindEvents() {
-      $("btnConnect").addEventListener("click", connectOrTest);
-      $("btnDisconnect").addEventListener("click", disconnect);
-      $("btnStopTop").addEventListener("click", () => sendCommand("x"));
-
-      UI.mode.addEventListener("change", () => {
-        saveSettings();
-        updateModeUI();
-        disconnect();
       });
 
-      UI.token.addEventListener("input", () => {
-        saveSettings();
-        updateModeUI();
+      document.querySelectorAll(".movement-button").forEach((button) => {
+        const command = button.dataset.cmd;
+
+        button.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          sendCommand(command, { force: true });
+        });
+
+        button.addEventListener("pointerup", (event) => {
+          event.preventDefault();
+          sendCommand("x", { force: true });
+        });
+
+        button.addEventListener("pointerleave", (event) => {
+          event.preventDefault();
+          sendCommand("x", { force: true });
+        });
+
+        button.addEventListener("pointercancel", (event) => {
+          event.preventDefault();
+          sendCommand("x", { force: true });
+        });
       });
 
-      UI.ip.addEventListener("change", saveSettings);
-
-      document.querySelectorAll("[data-cmd]").forEach((button) => {
-        button.addEventListener("click", () => sendCommand(button.dataset.cmd));
+      UI.stopButton.addEventListener("click", () => {
+        sendCommand("x", { force: true });
       });
+    }
 
-      document.addEventListener("keydown", (event) => {
-        const targetTag = (event.target && event.target.tagName || "").toLowerCase();
-        if (targetTag === "input" || targetTag === "select" || targetTag === "textarea") return;
-
+    function bindKeyboard() {
+      window.addEventListener("keydown", (event) => {
         const key = event.key.toLowerCase();
-        const command = KEY_TO_CMD[key];
 
-        if (!command) return;
+        if (!VALID_COMMANDS.has(key)) return;
 
         event.preventDefault();
 
-        if (lastKeyboardCmd === command && command !== "x") return;
+        if (MOVEMENT_COMMANDS.has(key)) {
+          if (activeMovementKey === key) return;
 
-        lastKeyboardCmd = command;
-        sendCommand(command);
+          activeMovementKey = key;
+          sendCommand(key, { force: true });
+          return;
+        }
+
+        sendCommand(key, { force: true });
       });
 
-      document.addEventListener("keyup", (event) => {
+      window.addEventListener("keyup", (event) => {
         const key = event.key.toLowerCase();
-        const command = KEY_TO_CMD[key];
 
-        if (!command) return;
-        lastKeyboardCmd = null;
+        if (!MOVEMENT_COMMANDS.has(key)) return;
 
-        // Al soltar una tecla de movimiento, se detiene el auto.
-        if (["w", "a", "s", "d", "arrowup", "arrowleft", "arrowdown", "arrowright"].includes(key)) {
-          sendCommand("x");
+        event.preventDefault();
+
+        if (activeMovementKey === key) {
+          activeMovementKey = null;
+          sendCommand("x", { force: true });
         }
       });
     }
 
-    loadSettings();
-    bindEvents();
-    log("Dashboard listo. Elige HTTP para el código ESP32 actual.", "ok");
+    UI.connectButton.addEventListener("click", connectOrTest);
+    UI.disconnectButton.addEventListener("click", disconnect);
+
+    UI.mode.addEventListener("change", () => {
+      updateModeLabel();
+      disconnect();
+    });
+
+    bindButtons();
+    bindKeyboard();
+    updateModeLabel();
+
+    log("Página cargada. Presiona Conectar / probar.");
   </script>
 </body>
 </html>

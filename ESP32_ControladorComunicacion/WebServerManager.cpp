@@ -104,7 +104,7 @@ static void processRequestLine(const String& line, WiFiClient& clientWeb, bool& 
     return;
   }
 
-  Serial2.print(command);
+  Serial2.write(command);
 
   Serial.print("Comando enviado al Arduino normal/Nano: ");
   Serial.println(command);
