@@ -1,11 +1,14 @@
 #pragma once
-#include <Servo.h>
 
-// Servo global original que pediste conservar.
-extern Servo myservo;
+// Sin Servo.h: el servo se controla por pulsos de software para no romper PWM en D10.
 
+extern int servo;
 extern int motor_der;
 extern int motor_izq;
+extern int motor_izq_del;
+extern int motor_der_del;
+extern int motor_izq_tras;
+extern int motor_der_tras;
 extern int servo_angle;
 extern int distancia_cm;
 

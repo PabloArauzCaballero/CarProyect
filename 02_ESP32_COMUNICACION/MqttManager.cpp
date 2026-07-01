@@ -34,15 +34,19 @@ void publishTelemetry() {
   if (!mqttClient.connected()) return;
 
   char topic[32];
-  char payload[160];
+  char payload[260];
 
   snprintf(topic, sizeof(topic), "robot/%d/sensores", GRUPO);
   snprintf(
     payload,
     sizeof(payload),
-    "{\"motor_der\":%d,\"motor_izq\":%d,\"servo\":%d,\"distancia\":%d}",
+    "{\"motor_der\":%d,\"motor_izq\":%d,\"motor_izq_del\":%d,\"motor_der_del\":%d,\"motor_izq_tras\":%d,\"motor_der_tras\":%d,\"servo\":%d,\"distancia\":%d}",
     motor_der,
     motor_izq,
+    motor_izq_del,
+    motor_der_del,
+    motor_izq_tras,
+    motor_der_tras,
     servo,
     distancia
   );

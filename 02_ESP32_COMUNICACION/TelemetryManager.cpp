@@ -1,13 +1,15 @@
 #include <Arduino.h>
+#include <stdio.h>
 
 #include "Constants.h"
 #include "Globals.h"
 #include "TelemetryManager.h"
 
-// Parser tolerante para tu caso real D10/D13 con SoftwareSerial en el Nano.
-// Acepta estos dos formatos:
-//   <motor_der,motor_izq,servo,distancia>\n   // protocolo nuevo
-//   motor_der,motor_izq,servo,distancia\n     // protocolo viejo, por si el Nano no quedó actualizado
+// Parser tolerante para Nano D0/D1 con Serial hardware.
+// Acepta:
+//   <motor_der,motor_izq,servo,distancia>
+//   <motor_der,motor_izq,servo,distancia,izq_del,der_del,izq_tras,der_tras>
+//   motor_der,motor_izq,servo,distancia
 
 static String telemetryBuffer;
 static bool framedPacketStarted = false;
@@ -37,22 +39,6 @@ static void rememberSerialByte(char c) {
   }
 }
 
-static bool isSignedNumber(const String& value) {
-  if (value.length() == 0) return false;
-
-  int start = 0;
-  if (value.charAt(0) == '-') {
-    if (value.length() == 1) return false;
-    start = 1;
-  }
-
-  for (int i = start; i < value.length(); i++) {
-    if (!isDigit(value.charAt(i))) return false;
-  }
-
-  return true;
-}
-
 static bool parseTelemetryLine(const String& rawLine) {
   String line = rawLine;
   line.trim();
@@ -64,41 +50,52 @@ static bool parseTelemetryLine(const String& rawLine) {
   if (line.endsWith(">")) line.remove(line.length() - 1, 1);
   line.trim();
 
-  int index1 = line.indexOf(',');
-  int index2 = line.indexOf(',', index1 + 1);
-  int index3 = line.indexOf(',', index2 + 1);
+  int parsedRight = 0;
+  int parsedLeft = 0;
+  int parsedServo = 90;
+  int parsedDistance = 0;
+  int parsedLeftFront = 0;
+  int parsedRightFront = 0;
+  int parsedLeftRear = 0;
+  int parsedRightRear = 0;
 
-  if (index1 == -1 || index2 == -1 || index3 == -1) {
+  int count = sscanf(
+    line.c_str(),
+    "%d,%d,%d,%d,%d,%d,%d,%d",
+    &parsedRight,
+    &parsedLeft,
+    &parsedServo,
+    &parsedDistance,
+    &parsedLeftFront,
+    &parsedRightFront,
+    &parsedLeftRear,
+    &parsedRightRear
+  );
+
+  if (count != 4 && count != 8) {
     telemetryParseErrorCount++;
-    Serial.print("Telemetria ignorada, no es CSV completo: [");
+    Serial.print("Telemetria ignorada, formato no reconocido: [");
     Serial.print(line);
     Serial.println("]");
     return false;
   }
 
-  String rightMotorText = line.substring(0, index1);
-  String leftMotorText = line.substring(index1 + 1, index2);
-  String servoText = line.substring(index2 + 1, index3);
-  String distanceText = line.substring(index3 + 1);
+  motor_der = parsedRight;
+  motor_izq = parsedLeft;
+  servo = parsedServo;
+  distancia = parsedDistance;
 
-  rightMotorText.trim();
-  leftMotorText.trim();
-  servoText.trim();
-  distanceText.trim();
-
-  if (!isSignedNumber(rightMotorText) || !isSignedNumber(leftMotorText) ||
-      !isSignedNumber(servoText) || !isSignedNumber(distanceText)) {
-    telemetryParseErrorCount++;
-    Serial.print("Telemetria ignorada, contiene valores no numericos: [");
-    Serial.print(line);
-    Serial.println("]");
-    return false;
+  if (count == 8) {
+    motor_izq_del = parsedLeftFront;
+    motor_der_del = parsedRightFront;
+    motor_izq_tras = parsedLeftRear;
+    motor_der_tras = parsedRightRear;
+  } else {
+    motor_izq_del = motor_izq;
+    motor_der_del = motor_der;
+    motor_izq_tras = motor_izq;
+    motor_der_tras = motor_der;
   }
-
-  motor_der = rightMotorText.toInt();
-  motor_izq = leftMotorText.toInt();
-  servo = servoText.toInt();
-  distancia = distanceText.toInt();
 
   telemetryOk = true;
   lastTelemetryRaw = line;
@@ -121,10 +118,10 @@ void setupTelemetrySerial() {
   Serial2.setTimeout(SERIAL2_TIMEOUT_MS);
 
   Serial.println("Serial2 activo.");
-  Serial.println("GPIO16 RX2 <- Nano D10/TX SoftwareSerial");
-  Serial.println("GPIO17 TX2 -> Nano D13/RX SoftwareSerial");
+  Serial.println("GPIO16 RX2 <- Nano D1/TX hardware mediante divisor");
+  Serial.println("GPIO17 TX2 -> Nano D0/RX hardware");
   Serial.println("Baud Nano <-> ESP32: 9600");
-  Serial.println("Protocolos aceptados: <motor_der,motor_izq,servo,distancia> y motor_der,motor_izq,servo,distancia");
+  Serial.println("Protocolos aceptados: CSV de 4 campos y CSV extendido de 8 campos.");
 }
 
 void readTelemetryFromArduino() {
@@ -132,7 +129,7 @@ void readTelemetryFromArduino() {
     char c = Serial2.read();
     rememberSerialByte(c);
 
-    // Protocolo nuevo con inicio '<' y cierre '>'.
+    // Protocolo con inicio '<' y cierre '>'.
     if (c == '<') {
       framedPacketStarted = true;
       plainCsvStarted = false;
@@ -148,14 +145,13 @@ void readTelemetryFromArduino() {
       }
 
       if (c == '\n' || c == '\r') {
-        // Algunos paquetes pueden llegar con salto antes del cierre si se cortan.
         telemetryParseErrorCount++;
         resetPacketState();
         continue;
       }
 
       if (isAllowedCsvChar(c)) {
-        if (telemetryBuffer.length() < 50) {
+        if (telemetryBuffer.length() < 80) {
           telemetryBuffer += c;
         } else {
           telemetryParseErrorCount++;
@@ -198,7 +194,7 @@ void readTelemetryFromArduino() {
       }
 
       if (isAllowedCsvChar(c)) {
-        if (telemetryBuffer.length() < 50) {
+        if (telemetryBuffer.length() < 80) {
           telemetryBuffer += c;
         } else {
           telemetryParseErrorCount++;

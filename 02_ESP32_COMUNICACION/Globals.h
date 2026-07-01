@@ -5,6 +5,10 @@
 
 extern int motor_der;
 extern int motor_izq;
+extern int motor_izq_del;
+extern int motor_der_del;
+extern int motor_izq_tras;
+extern int motor_der_tras;
 extern int servo;
 extern int distancia;
 extern unsigned long lastMsg;

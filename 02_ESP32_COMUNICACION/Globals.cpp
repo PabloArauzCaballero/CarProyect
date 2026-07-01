@@ -3,6 +3,10 @@
 
 int motor_der = 0;
 int motor_izq = 0;
+int motor_izq_del = 0;
+int motor_der_del = 0;
+int motor_izq_tras = 0;
+int motor_der_tras = 0;
 int servo = 90;
 int distancia = 0;
 

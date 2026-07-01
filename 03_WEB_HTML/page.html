@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Robot 4WD · Panel de Control</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080b12;
+      --surface: rgba(18, 24, 34, 0.92);
+      --surface-soft: rgba(255, 255, 255, 0.045);
+      --surface-strong: rgba(255, 255, 255, 0.075);
+      --border: rgba(255, 255, 255, 0.105);
+      --border-strong: rgba(255, 255, 255, 0.18);
+      --text: #f7fafc;
+      --muted: #9ca7b7;
+      --faint: #6f7b8e;
+      --accent: #7dd3fc;
+      --accent-2: #a7f3d0;
+      --danger: #fb7185;
+      --warning: #facc15;
+      --ok: #34d399;
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 0%, rgba(125, 211, 252, 0.18), transparent 26rem),
+        radial-gradient(circle at 82% 12%, rgba(167, 243, 208, 0.12), transparent 28rem),
+        linear-gradient(135deg, #080b12 0%, #0c111c 44%, #070a10 100%);
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      color: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .shell {
+      width: min(1280px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0 42px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, rgba(125, 211, 252, 0.22), rgba(167, 243, 208, 0.14));
+      border: 1px solid var(--border-strong);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 12px 30px rgba(0,0,0,0.24);
+    }
+
+    .logo svg { width: 25px; height: 25px; }
+
+    .brand small {
+      color: var(--muted);
+      display: block;
+      margin-top: 2px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 21px;
+      letter-spacing: -0.035em;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.045);
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--danger);
+      box-shadow: 0 0 0 4px rgba(251, 113, 133, 0.14);
+    }
+
+    .dot.ok {
+      background: var(--ok);
+      box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.14);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) minmax(340px, 0.82fr);
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(18, 24, 34, 0.96), rgba(12, 17, 27, 0.96));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      overflow: hidden;
+    }
+
+    .hero-title {
+      min-height: 100%;
+      position: relative;
+      padding: clamp(24px, 5vw, 42px);
+    }
+
+    .hero-title::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      border-radius: 999px;
+      right: -110px;
+      top: -110px;
+      background: radial-gradient(circle, rgba(125,211,252,0.16), transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-title h2 {
+      position: relative;
+      margin: 0;
+      max-width: 700px;
+      font-size: clamp(40px, 8vw, 86px);
+      line-height: 0.92;
+      letter-spacing: -0.08em;
+    }
+
+    .hero-title p {
+      position: relative;
+      max-width: 680px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 17px;
+    }
+
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+      position: relative;
+    }
+
+    .grid-main {
+      display: grid;
+      grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .stack { display: grid; gap: 18px; }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .section-head h3 {
+      margin: 0;
+      font-size: 21px;
+      letter-spacing: -0.04em;
+    }
+
+    .section-head p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .mini-label {
+      color: var(--faint);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 800;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field { display: grid; gap: 8px; }
+
+    label {
+      color: var(--muted);
+      font-weight: 750;
+      font-size: 13px;
+    }
+
+    input[type="text"], input[type="password"], select {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(7, 10, 16, 0.58);
+      color: var(--text);
+      padding: 0 14px;
+      outline: none;
+      transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    input[type="text"]:focus, input[type="password"]:focus, select:focus {
+      border-color: rgba(125, 211, 252, 0.72);
+      box-shadow: 0 0 0 4px rgba(125, 211, 252, 0.10);
+      background: rgba(7, 10, 16, 0.78);
+    }
+
+    .btn {
+      min-height: 48px;
+      padding: 0 16px;
+      border-radius: 16px;
+      background: var(--surface-strong);
+      border: 1px solid var(--border);
+      font-weight: 850;
+      letter-spacing: -0.015em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      transition: transform 150ms ease, background 150ms ease, border-color 150ms ease, opacity 150ms ease;
+      user-select: none;
+    }
+
+    .btn:hover { transform: translateY(-1px); border-color: var(--border-strong); }
+    .btn:active { transform: translateY(1px) scale(0.99); }
+
+    .btn.primary {
+      background: linear-gradient(135deg, rgba(125,211,252,0.98), rgba(167,243,208,0.90));
+      color: #061017;
+      border-color: transparent;
+    }
+
+    .btn.danger {
+      background: rgba(251, 113, 133, 0.12);
+      border-color: rgba(251, 113, 133, 0.35);
+      color: #fecdd3;
+    }
+
+    .btn.ghost { background: rgba(255,255,255,0.035); }
+    .btn.full { width: 100%; }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      min-height: 104px;
+    }
+
+    .metric .name {
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .metric .value {
+      margin-top: 10px;
+      font-size: 31px;
+      font-weight: 900;
+      letter-spacing: -0.055em;
+    }
+
+    .metric .hint {
+      color: var(--faint);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .drive-layout {
+      display: grid;
+      grid-template-columns: 252px minmax(0, 1fr);
+      gap: 18px;
+      align-items: center;
+    }
+
+    .dpad {
+      display: grid;
+      grid-template-columns: repeat(3, 76px);
+      grid-template-rows: repeat(3, 76px);
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .dpad .btn {
+      min-height: auto;
+      height: 76px;
+      border-radius: 24px;
+      font-size: 25px;
+      background: rgba(255,255,255,0.06);
+    }
+
+    .dpad .stop {
+      background: rgba(251, 113, 133, 0.16);
+      border-color: rgba(251, 113, 133, 0.35);
+      color: #fecdd3;
+      font-size: 15px;
+    }
+
+    .range-block {
+      display: grid;
+      gap: 11px;
+      padding: 15px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .range-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .range-value {
+      font-variant-numeric: tabular-nums;
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      height: 34px;
+      background: transparent;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(251,113,133,0.72), rgba(255,255,255,0.14), rgba(52,211,153,0.72));
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: var(--text);
+      border: 5px solid rgba(125,211,252,0.95);
+      margin-top: -9px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.38);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(251,113,133,0.72), rgba(255,255,255,0.14), rgba(52,211,153,0.72));
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 17px;
+      height: 17px;
+      border-radius: 999px;
+      background: var(--text);
+      border: 5px solid rgba(125,211,252,0.95);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.38);
+    }
+
+    .wheel-panel {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .servo-wheel-wrap {
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .servo-wheel {
+      width: 196px;
+      height: 196px;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.12) 0 27%, transparent 28%),
+        conic-gradient(from 210deg, rgba(251,113,133,0.72), rgba(125,211,252,0.72), rgba(52,211,153,0.72), rgba(251,113,133,0.72));
+      border: 1px solid var(--border-strong);
+      box-shadow: inset 0 0 0 18px rgba(8, 11, 18, 0.72), 0 24px 48px rgba(0,0,0,0.34);
+      position: relative;
+      display: grid;
+      place-items: center;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .servo-wheel::before,
+    .servo-wheel::after {
+      content: "";
+      position: absolute;
+      background: rgba(8, 11, 18, 0.78);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+    }
+
+    .servo-wheel::before {
+      width: 148px;
+      height: 20px;
+      transform: rotate(var(--servo-rot, 0deg));
+    }
+
+    .servo-wheel::after {
+      width: 20px;
+      height: 148px;
+      transform: rotate(var(--servo-rot, 0deg));
+    }
+
+    .servo-center {
+      width: 58px;
+      height: 58px;
+      border-radius: 999px;
+      background: #0b111c;
+      border: 1px solid var(--border-strong);
+      display: grid;
+      place-items: center;
+      z-index: 1;
+      font-weight: 950;
+      color: var(--accent);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .wheel-scale {
+      display: flex;
+      justify-content: space-between;
+      color: var(--faint);
+      font-size: 12px;
+      font-weight: 800;
+      margin-top: 8px;
+      width: 196px;
+    }
+
+    .wheel-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .wheel-card {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(255,255,255,0.035);
+    }
+
+    .wheel-card .title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-weight: 850;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .bar {
+      height: 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.10);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: var(--bar-size, 0%);
+      transform: translateX(var(--bar-shift, 0));
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(125,211,252,0.88), rgba(167,243,208,0.88));
+    }
+
+    .switch-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+      margin: 12px 0 0;
+    }
+
+    .switch-row input { accent-color: var(--accent); }
+
+    .log {
+      min-height: 170px;
+      max-height: 260px;
+      overflow: auto;
+      padding: 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(7,10,16,0.58);
+      white-space: pre-wrap;
+      color: #cbd5e1;
+      line-height: 1.5;
+      font-size: 13px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .help-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .key {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.035);
+      padding: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .key strong {
+      color: var(--text);
+      display: block;
+      font-size: 15px;
+      margin-bottom: 3px;
+    }
+
+    .span-2 { grid-column: span 2; }
+
+    @media (max-width: 1060px) {
+      .hero, .grid-main { grid-template-columns: 1fr; }
+      .drive-layout, .wheel-panel { grid-template-columns: 1fr; }
+      .servo-wheel-wrap { order: -1; }
+    }
+
+    @media (max-width: 660px) {
+      .shell { width: min(100% - 18px, 1280px); padding-top: 16px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .card { padding: 16px; border-radius: 22px; }
+      .hero-title { padding: 24px 18px; }
+      .form-grid, .metric-grid, .wheel-grid, .help-grid { grid-template-columns: 1fr; }
+      .span-2 { grid-column: auto; }
+      .dpad { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 68px); width: 100%; }
+      .dpad .btn { height: 68px; }
+      .servo-wheel { width: 180px; height: 180px; }
+      .wheel-scale { width: 180px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M7 16.5h10M6.3 9.5h11.4l1.7 4.7a2 2 0 0 1-1.88 2.68H6.48A2 2 0 0 1 4.6 14.2L6.3 9.5Z" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M8.5 17.5a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6Zm7 0a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6ZM9 9.5l1.1-3.1h3.8L15 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Robot 4WD</h1>
+          <small>ESP32 + Arduino Nano/UNO · Control profesional</small>
+        </div>
+      </div>
+      <div class="status-pill"><span id="statusDot" class="dot"></span><span id="connectionText">Sin conexión</span></div>
+    </header>
+
+    <section class="hero">
+      <article class="card hero-title">
+        <span class="mini-label">Panel minimalista</span>
+        <h2>Control total del robot.</h2>
+        <p>
+          Manejo rápido, velocidades independientes por rueda, volante del servo siempre disponible,
+          telemetría en vivo y prueba de vida para validar motores, servo y ultrasónico antes de operar.
+        </p>
+        <div class="quick-actions">
+          <button id="connectButton" class="btn primary">Conectar / probar</button>
+          <button id="stopButton" class="btn danger">STOP</button>
+          <button id="selfTestButton" class="btn ghost">Prueba de vida</button>
+          <button id="resetButton" class="btn ghost">Reset Nano</button>
+        </div>
+      </article>
+
+      <aside class="card">
+        <div class="section-head">
+          <div>
+            <h3>Conexión</h3>
+            <p>Usa la IP que muestra el ESP32. El control manual se envía por HTTP al ESP32.</p>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field span-2">
+            <label for="ipInput">IP o URL del ESP32</label>
+            <input id="ipInput" type="text" value="172.20.10.12" placeholder="Ej: 172.20.10.12" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="tokenInput">Token, si lo activas</label>
+            <input id="tokenInput" type="password" placeholder="Opcional" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="pollSelect">Telemetría</label>
+            <select id="pollSelect">
+              <option value="350">Rápida · 350 ms</option>
+              <option value="700" selected>Normal · 700 ms</option>
+              <option value="1200">Ligera · 1200 ms</option>
+            </select>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="grid-main">
+      <div class="stack">
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <h3>Telemetría</h3>
+              <p>Estado recibido desde Arduino por Serial D0/D1.</p>
+            </div>
+            <span class="status-pill"><span id="telemetryDot" class="dot"></span><span id="telemetryText">sin datos</span></span>
+          </div>
+          <div class="metric-grid">
+            <div class="metric">
+              <div class="name">Distancia</div>
+              <div id="distanceValue" class="value">-- cm</div>
+              <div id="distanceHint" class="hint">Ultrasónico A2/A3</div>
+            </div>
+            <div class="metric">
+              <div class="name">Servo</div>
+              <div id="servoMetric" class="value">90°</div>
+              <div class="hint">Señal en D9</div>
+            </div>
+            <div class="metric">
+              <div class="name">Último comando</div>
+              <div id="lastCommand" class="value">--</div>
+              <div class="hint">WASD / manual / prueba</div>
+            </div>
+            <div class="metric">
+              <div class="name">Edad dato</div>
+              <div id="ageValue" class="value">-- ms</div>
+              <div class="hint">Desde último paquete válido</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <h3>Manejo rápido</h3>
+              <p>Mantén presionado para mover. Al soltar W/A/S/D se envía STOP por seguridad.</p>
+            </div>
+          </div>
+          <div class="drive-layout">
+            <div class="dpad" aria-label="Control de dirección">
+              <div></div>
+              <button class="btn" data-cmd="w" data-hold="true">▲</button>
+              <div></div>
+              <button class="btn" data-cmd="a" data-hold="true">◀</button>
+              <button class="btn stop" data-cmd="x">STOP</button>
+              <button class="btn" data-cmd="d" data-hold="true">▶</button>
+              <div></div>
+              <button class="btn" data-cmd="s" data-hold="true">▼</button>
+              <div></div>
+            </div>
+            <div>
+              <div class="range-block">
+                <div class="range-top"><label for="driveThrottle">Avance manual por lados</label><span id="driveThrottleLabel" class="range-value">0</span></div>
+                <input id="driveThrottle" type="range" min="-255" max="255" value="0" step="5" />
+              </div>
+              <div class="range-block">
+                <div class="range-top"><label for="driveSteering">Volante de motores</label><span id="driveSteeringLabel" class="range-value">0</span></div>
+                <input id="driveSteering" type="range" min="-255" max="255" value="0" step="5" />
+              </div>
+              <button id="applyDriveButton" class="btn primary full">Enviar conducción por lados</button>
+              <div class="switch-row">
+                <label><input id="liveDrive" type="checkbox" /> Enviar conducción en vivo</label>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <h3>Registro</h3>
+              <p>Mensajes de conexión, comandos y diagnóstico.</p>
+            </div>
+          </div>
+          <div id="logBox" class="log">Página cargada. Presiona “Conectar / probar”.</div>
+          <div class="help-grid">
+            <div class="key"><strong>W/A/S/D</strong>Mover</div>
+            <div class="key"><strong>X</strong>Stop</div>
+            <div class="key"><strong>Q/E</strong>Servo</div>
+            <div class="key"><strong>T</strong>Prueba</div>
+          </div>
+        </article>
+      </div>
+
+      <div class="stack">
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <h3>Volante del servo</h3>
+              <p>Disponible en cualquier momento. Arrastra el volante o mueve el slider para cambiar el ángulo.</p>
+            </div>
+            <span class="status-pill"><span id="servoAngleText">90°</span></span>
+          </div>
+          <div class="wheel-panel">
+            <div class="servo-wheel-wrap">
+              <div id="servoWheel" class="servo-wheel" role="slider" aria-valuemin="30" aria-valuemax="150" aria-valuenow="90" tabindex="0">
+                <div class="servo-center">90°</div>
+              </div>
+              <div class="wheel-scale"><span>30°</span><span>90°</span><span>150°</span></div>
+            </div>
+            <div>
+              <div class="range-block">
+                <div class="range-top"><label for="servoAngle">Ángulo exacto</label><span id="servoLabel" class="range-value">90°</span></div>
+                <input id="servoAngle" type="range" min="30" max="150" value="90" step="1" />
+              </div>
+              <div class="form-grid">
+                <button id="servoLeftButton" class="btn ghost">Servo -15°</button>
+                <button id="servoRightButton" class="btn ghost">Servo +15°</button>
+                <button id="centerServoButton" class="btn primary span-2">Centrar servo 90°</button>
+              </div>
+              <div class="switch-row">
+                <label><input id="includeServoWithWheels" type="checkbox" checked /> Incluir servo al aplicar ruedas</label>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <h3>Velocidad por rueda</h3>
+              <p>Ahora sí es independiente porque separaste la placa delantera y trasera.</p>
+            </div>
+          </div>
+          <div class="wheel-grid">
+            <div class="wheel-card">
+              <div class="title"><span>Delantera izquierda</span><span id="lfLabel">0</span></div>
+              <input id="lfSpeed" type="range" min="-255" max="255" value="0" step="5" />
+              <div id="lfBar" class="bar"></div>
+            </div>
+            <div class="wheel-card">
+              <div class="title"><span>Delantera derecha</span><span id="rfLabel">0</span></div>
+              <input id="rfSpeed" type="range" min="-255" max="255" value="0" step="5" />
+              <div id="rfBar" class="bar"></div>
+            </div>
+            <div class="wheel-card">
+              <div class="title"><span>Trasera izquierda</span><span id="lrLabel">0</span></div>
+              <input id="lrSpeed" type="range" min="-255" max="255" value="0" step="5" />
+              <div id="lrBar" class="bar"></div>
+            </div>
+            <div class="wheel-card">
+              <div class="title"><span>Trasera derecha</span><span id="rrLabel">0</span></div>
+              <input id="rrSpeed" type="range" min="-255" max="255" value="0" step="5" />
+              <div id="rrBar" class="bar"></div>
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top: 14px;">
+            <button id="applyWheelsButton" class="btn primary">Aplicar 4 ruedas</button>
+            <button id="zeroWheelsButton" class="btn danger">Ruedas en 0</button>
+          </div>
+          <div class="switch-row">
+            <label><input id="liveWheels" type="checkbox" /> Enviar ruedas en vivo</label>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const UI = {
+      statusDot: document.getElementById("statusDot"),
+      connectionText: document.getElementById("connectionText"),
+      telemetryDot: document.getElementById("telemetryDot"),
+      telemetryText: document.getElementById("telemetryText"),
+      ipInput: document.getElementById("ipInput"),
+      tokenInput: document.getElementById("tokenInput"),
+      pollSelect: document.getElementById("pollSelect"),
+      connectButton: document.getElementById("connectButton"),
+      stopButton: document.getElementById("stopButton"),
+      selfTestButton: document.getElementById("selfTestButton"),
+      resetButton: document.getElementById("resetButton"),
+      distanceValue: document.getElementById("distanceValue"),
+      distanceHint: document.getElementById("distanceHint"),
+      servoMetric: document.getElementById("servoMetric"),
+      lastCommand: document.getElementById("lastCommand"),
+      ageValue: document.getElementById("ageValue"),
+      logBox: document.getElementById("logBox"),
+      servoWheel: document.getElementById("servoWheel"),
+      servoAngle: document.getElementById("servoAngle"),
+      servoLabel: document.getElementById("servoLabel"),
+      servoAngleText: document.getElementById("servoAngleText"),
+      servoLeftButton: document.getElementById("servoLeftButton"),
+      servoRightButton: document.getElementById("servoRightButton"),
+      centerServoButton: document.getElementById("centerServoButton"),
+      includeServoWithWheels: document.getElementById("includeServoWithWheels"),
+      lfSpeed: document.getElementById("lfSpeed"),
+      rfSpeed: document.getElementById("rfSpeed"),
+      lrSpeed: document.getElementById("lrSpeed"),
+      rrSpeed: document.getElementById("rrSpeed"),
+      lfLabel: document.getElementById("lfLabel"),
+      rfLabel: document.getElementById("rfLabel"),
+      lrLabel: document.getElementById("lrLabel"),
+      rrLabel: document.getElementById("rrLabel"),
+      lfBar: document.getElementById("lfBar"),
+      rfBar: document.getElementById("rfBar"),
+      lrBar: document.getElementById("lrBar"),
+      rrBar: document.getElementById("rrBar"),
+      applyWheelsButton: document.getElementById("applyWheelsButton"),
+      zeroWheelsButton: document.getElementById("zeroWheelsButton"),
+      liveWheels: document.getElementById("liveWheels"),
+      driveThrottle: document.getElementById("driveThrottle"),
+      driveSteering: document.getElementById("driveSteering"),
+      driveThrottleLabel: document.getElementById("driveThrottleLabel"),
+      driveSteeringLabel: document.getElementById("driveSteeringLabel"),
+      applyDriveButton: document.getElementById("applyDriveButton"),
+      liveDrive: document.getElementById("liveDrive")
+    };
+
+    const SERVO_MIN = 30;
+    const SERVO_MAX = 150;
+    const SERVO_CENTER = 90;
+    const THROTTLE_MS = 110;
+    const movementKeys = new Set(["w", "a", "s", "d"]);
+    const validKeys = new Set(["w", "a", "s", "d", "x", "q", "e", "c", "z", "t"]);
+
+    let pollTimer = null;
+    let activeMovementKey = null;
+    let lastCommandAt = 0;
+    let servoTimer = null;
+    let wheelsTimer = null;
+    let driveTimer = null;
+    let draggingServo = false;
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, Number(value) || 0));
+    }
+
+    function timeStamp() {
+      return new Date().toLocaleTimeString("es-BO", { hour12: false });
+    }
+
+    function log(message, type = "info") {
+      const label = type === "error" ? "ERROR" : type === "warn" ? "AVISO" : "INFO";
+      const line = `[${timeStamp()}] ${label}: ${message}`;
+      UI.logBox.textContent = UI.logBox.textContent.trim() === "Página cargada. Presiona “Conectar / probar”." ? line : `${line}\n${UI.logBox.textContent}`;
+    }
+
+    function cleanBaseUrl() {
+      let value = UI.ipInput.value.trim();
+      if (!value) value = "172.20.10.12";
+      value = value.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+      return `http://${value}`;
+    }
+
+    function buildUrl(path, params = {}) {
+      const query = new URLSearchParams();
+      const token = UI.tokenInput.value.trim();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") query.set(key, value);
+      });
+      if (token) query.set("token", token);
+      const suffix = query.toString() ? `?${query.toString()}` : "";
+      return `${cleanBaseUrl()}${path}${suffix}`;
+    }
+
+    function setConnection(ok, text) {
+      UI.statusDot.classList.toggle("ok", ok);
+      UI.connectionText.textContent = text;
+    }
+
+    function setTelemetry(ok, text) {
+      UI.telemetryDot.classList.toggle("ok", ok);
+      UI.telemetryText.textContent = text;
+    }
+
+    async function request(path, params = {}) {
+      const url = buildUrl(path, params);
+      const response = await fetch(url, { method: "GET", cache: "no-store" });
+      const text = await response.text();
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${text || "sin respuesta"}`);
+      return text;
+    }
+
+    function parseTelemetry(text) {
+      const clean = String(text || "").trim();
+      if (!clean) return null;
+
+      try {
+        return normalizeTelemetry(JSON.parse(clean));
+      } catch (_) {}
+
+      const csv = clean.replace(/^</, "").replace(/>$/, "");
+      if (csv.includes(",")) {
+        const parts = csv.split(",").map(part => Number(part.trim()));
+        if (parts.length >= 4 && parts.every(Number.isFinite)) {
+          return normalizeTelemetry({
+            motor_der: parts[0],
+            motor_izq: parts[1],
+            servo: parts[2],
+            distancia: parts[3],
+            motor_izq_del: parts[4] ?? parts[1],
+            motor_der_del: parts[5] ?? parts[0],
+            motor_izq_tras: parts[6] ?? parts[1],
+            motor_der_tras: parts[7] ?? parts[0],
+            telemetry_ok: true,
+            age_ms: 0
+          });
+        }
+      }
+      return null;
+    }
+
+    function normalizeTelemetry(data) {
+      return {
+        motor_der: Number(data.motor_der ?? data.right ?? 0),
+        motor_izq: Number(data.motor_izq ?? data.left ?? 0),
+        motor_izq_del: Number(data.motor_izq_del ?? data.lf ?? data.motor_izq ?? 0),
+        motor_der_del: Number(data.motor_der_del ?? data.rf ?? data.motor_der ?? 0),
+        motor_izq_tras: Number(data.motor_izq_tras ?? data.lr ?? data.motor_izq ?? 0),
+        motor_der_tras: Number(data.motor_der_tras ?? data.rr ?? data.motor_der ?? 0),
+        servo: Number(data.servo ?? SERVO_CENTER),
+        distancia: Number(data.distancia ?? data.distance ?? 0),
+        telemetry_ok: Boolean(data.telemetry_ok ?? true),
+        age_ms: Number(data.age_ms ?? 0),
+        parse_errors: Number(data.parse_errors ?? 0),
+        ignored_bytes: Number(data.ignored_bytes ?? 0)
+      };
+    }
+
+    function setBar(element, value) {
+      const pwm = clamp(value, -255, 255);
+      const size = `${Math.abs(pwm) / 255 * 50}%`;
+      element.style.setProperty("--bar-size", size);
+      element.style.setProperty("--bar-shift", pwm < 0 ? "-100%" : "0");
+    }
+
+    function updateWheelUiFromTelemetry(data) {
+      UI.lfLabel.textContent = data.motor_izq_del;
+      UI.rfLabel.textContent = data.motor_der_del;
+      UI.lrLabel.textContent = data.motor_izq_tras;
+      UI.rrLabel.textContent = data.motor_der_tras;
+      setBar(UI.lfBar, data.motor_izq_del);
+      setBar(UI.rfBar, data.motor_der_del);
+      setBar(UI.lrBar, data.motor_izq_tras);
+      setBar(UI.rrBar, data.motor_der_tras);
+    }
+
+    function applyTelemetry(data) {
+      const distance = Number.isFinite(data.distancia) ? data.distancia : 0;
+      UI.distanceValue.textContent = distance > 0 ? `${distance} cm` : "-- cm";
+      UI.distanceHint.textContent = distance > 0 && distance <= 20 ? "Obstáculo cerca: avance bloqueado" : "Ultrasónico A2/A3";
+      UI.servoMetric.textContent = `${data.servo}°`;
+      UI.ageValue.textContent = data.age_ms >= 0 ? `${data.age_ms} ms` : "-- ms";
+      updateWheelUiFromTelemetry(data);
+      setServoUi(data.servo, false);
+      setTelemetry(data.telemetry_ok, data.telemetry_ok ? "recibiendo" : "sin datos");
+    }
+
+    async function fetchTelemetry() {
+      try {
+        const text = await request("/telemetry");
+        const data = parseTelemetry(text);
+        if (!data) throw new Error(`Telemetría no reconocida: ${text.slice(0, 80)}`);
+        applyTelemetry(data);
+        setConnection(true, "Conectado");
+        return true;
+      } catch (error) {
+        setConnection(false, "Sin conexión");
+        setTelemetry(false, "sin datos");
+        log(`Telemetría falló: ${error.message}`, "warn");
+        return false;
+      }
+    }
+
+    function startPolling() {
+      stopPolling();
+      const interval = Number(UI.pollSelect.value) || 700;
+      pollTimer = window.setInterval(fetchTelemetry, interval);
+    }
+
+    function stopPolling() {
+      if (pollTimer) window.clearInterval(pollTimer);
+      pollTimer = null;
+    }
+
+    async function connect() {
+      log(`Probando ESP32: ${buildUrl("/telemetry")}`);
+      const ok = await fetchTelemetry();
+      if (ok) {
+        startPolling();
+        log("Conexión activa. Telemetría en vivo iniciada.");
+      }
+    }
+
+    async function sendCommand(cmd, options = {}) {
+      const now = Date.now();
+      if (!options.force && now - lastCommandAt < THROTTLE_MS) return;
+      lastCommandAt = now;
+
+      try {
+        const text = await request("/control", { cmd });
+        UI.lastCommand.textContent = cmd;
+        setConnection(true, "Comando enviado");
+        log(`Comando ${cmd.toUpperCase()} enviado. ${text || "OK"}`);
+        fetchTelemetry();
+      } catch (error) {
+        setConnection(false, "Error comando");
+        log(`No se pudo enviar ${cmd}: ${error.message}`, "error");
+      }
+    }
+
+    function wheelValues() {
+      return {
+        lf: Number(UI.lfSpeed.value),
+        rf: Number(UI.rfSpeed.value),
+        lr: Number(UI.lrSpeed.value),
+        rr: Number(UI.rrSpeed.value)
+      };
+    }
+
+    async function sendManual(params, label = "manual") {
+      try {
+        const text = await request("/manual", params);
+        UI.lastCommand.textContent = label;
+        setConnection(true, "Manual enviado");
+        log(`${label} enviado. ${text || "OK"}`);
+        fetchTelemetry();
+        return true;
+      } catch (error) {
+        setConnection(false, "Error manual");
+        log(`No se pudo enviar ${label}: ${error.message}`, "error");
+        return false;
+      }
+    }
+
+    function sendWheelsNow() {
+      const params = wheelValues();
+      if (UI.includeServoWithWheels.checked) params.servo = Number(UI.servoAngle.value);
+      return sendManual(params, "4 ruedas");
+    }
+
+    function sendWheelsDebounced() {
+      window.clearTimeout(wheelsTimer);
+      wheelsTimer = window.setTimeout(() => {
+        if (UI.liveWheels.checked) sendWheelsNow();
+      }, THROTTLE_MS);
+    }
+
+    function updateManualLabels() {
+      const values = wheelValues();
+      UI.lfLabel.textContent = values.lf;
+      UI.rfLabel.textContent = values.rf;
+      UI.lrLabel.textContent = values.lr;
+      UI.rrLabel.textContent = values.rr;
+      setBar(UI.lfBar, values.lf);
+      setBar(UI.rfBar, values.rf);
+      setBar(UI.lrBar, values.lr);
+      setBar(UI.rrBar, values.rr);
+    }
+
+    function driveValues() {
+      const throttle = Number(UI.driveThrottle.value);
+      const steering = Number(UI.driveSteering.value);
+      let left;
+      let right;
+
+      if (throttle === 0) {
+        left = -steering;
+        right = steering;
+      } else {
+        left = throttle - steering;
+        right = throttle + steering;
+      }
+
+      return {
+        left: clamp(Math.round(left), -255, 255),
+        right: clamp(Math.round(right), -255, 255)
+      };
+    }
+
+    function updateDriveLabels() {
+      UI.driveThrottleLabel.textContent = UI.driveThrottle.value;
+      UI.driveSteeringLabel.textContent = UI.driveSteering.value;
+    }
+
+    function sendDriveNow() {
+      const values = driveValues();
+      return sendManual(values, `lados L:${values.left} R:${values.right}`);
+    }
+
+    function sendDriveDebounced() {
+      window.clearTimeout(driveTimer);
+      driveTimer = window.setTimeout(() => {
+        if (UI.liveDrive.checked) sendDriveNow();
+      }, THROTTLE_MS);
+    }
+
+    function setServoUi(angle, shouldSend = true) {
+      const safe = clamp(Math.round(angle), SERVO_MIN, SERVO_MAX);
+      UI.servoAngle.value = String(safe);
+      UI.servoLabel.textContent = `${safe}°`;
+      UI.servoAngleText.textContent = `${safe}°`;
+      UI.servoMetric.textContent = `${safe}°`;
+      UI.servoWheel.setAttribute("aria-valuenow", String(safe));
+      UI.servoWheel.querySelector(".servo-center").textContent = `${safe}°`;
+      UI.servoWheel.style.setProperty("--servo-rot", `${safe - SERVO_CENTER}deg`);
+      if (shouldSend) sendServoDebounced();
+    }
+
+    function sendServoDebounced() {
+      window.clearTimeout(servoTimer);
+      servoTimer = window.setTimeout(() => {
+        sendManual({ servo: Number(UI.servoAngle.value) }, "servo");
+      }, THROTTLE_MS);
+    }
+
+    function angleFromServoPointer(event) {
+      const rect = UI.servoWheel.getBoundingClientRect();
+      const x = clamp(event.clientX - rect.left, 0, rect.width);
+      const ratio = x / rect.width;
+      return SERVO_MIN + ratio * (SERVO_MAX - SERVO_MIN);
+    }
+
+    function bindHoldButton(button) {
+      const cmd = button.dataset.cmd;
+      const isHoldMovement = button.dataset.hold === "true";
+      let isDown = false;
+
+      button.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        isDown = true;
+        sendCommand(cmd, { force: true });
+      });
+
+      button.addEventListener("pointerup", event => {
+        event.preventDefault();
+        if (!isDown) return;
+        isDown = false;
+        if (isHoldMovement) sendCommand("x", { force: true });
+      });
+
+      button.addEventListener("pointercancel", () => {
+        if (isHoldMovement) sendCommand("x", { force: true });
+        isDown = false;
+      });
+
+      button.addEventListener("pointerleave", () => {
+        if (isDown && isHoldMovement) {
+          sendCommand("x", { force: true });
+          isDown = false;
+        }
+      });
+    }
+
+    function bindUi() {
+      UI.connectButton.addEventListener("click", connect);
+      UI.pollSelect.addEventListener("change", () => {
+        if (pollTimer) startPolling();
+      });
+
+      document.querySelectorAll("[data-cmd]").forEach(bindHoldButton);
+      UI.stopButton.addEventListener("click", () => sendCommand("x", { force: true }));
+      UI.selfTestButton.addEventListener("click", () => sendCommand("t", { force: true }));
+      UI.resetButton.addEventListener("click", () => sendCommand("z", { force: true }));
+
+      UI.servoAngle.addEventListener("input", () => setServoUi(Number(UI.servoAngle.value), true));
+      UI.centerServoButton.addEventListener("click", () => setServoUi(SERVO_CENTER, true));
+      UI.servoLeftButton.addEventListener("click", () => setServoUi(Number(UI.servoAngle.value) - 15, true));
+      UI.servoRightButton.addEventListener("click", () => setServoUi(Number(UI.servoAngle.value) + 15, true));
+
+      UI.servoWheel.addEventListener("pointerdown", event => {
+        draggingServo = true;
+        UI.servoWheel.setPointerCapture(event.pointerId);
+        setServoUi(angleFromServoPointer(event), true);
+      });
+      UI.servoWheel.addEventListener("pointermove", event => {
+        if (!draggingServo) return;
+        setServoUi(angleFromServoPointer(event), true);
+      });
+      UI.servoWheel.addEventListener("pointerup", event => {
+        draggingServo = false;
+        UI.servoWheel.releasePointerCapture(event.pointerId);
+        setServoUi(angleFromServoPointer(event), true);
+      });
+      UI.servoWheel.addEventListener("keydown", event => {
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          setServoUi(Number(UI.servoAngle.value) - 5, true);
+        }
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          setServoUi(Number(UI.servoAngle.value) + 5, true);
+        }
+        if (event.key.toLowerCase() === "c") {
+          event.preventDefault();
+          setServoUi(SERVO_CENTER, true);
+        }
+      });
+
+      [UI.lfSpeed, UI.rfSpeed, UI.lrSpeed, UI.rrSpeed].forEach(input => {
+        input.addEventListener("input", () => {
+          updateManualLabels();
+          sendWheelsDebounced();
+        });
+      });
+      UI.applyWheelsButton.addEventListener("click", sendWheelsNow);
+      UI.zeroWheelsButton.addEventListener("click", () => {
+        UI.lfSpeed.value = "0";
+        UI.rfSpeed.value = "0";
+        UI.lrSpeed.value = "0";
+        UI.rrSpeed.value = "0";
+        updateManualLabels();
+        sendWheelsNow();
+      });
+
+      [UI.driveThrottle, UI.driveSteering].forEach(input => {
+        input.addEventListener("input", () => {
+          updateDriveLabels();
+          sendDriveDebounced();
+        });
+      });
+      UI.applyDriveButton.addEventListener("click", sendDriveNow);
+
+      window.addEventListener("keydown", event => {
+        const target = event.target;
+        if (target && ["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName)) return;
+        const key = event.key.toLowerCase();
+        if (!validKeys.has(key)) return;
+        event.preventDefault();
+
+        if (movementKeys.has(key)) {
+          if (activeMovementKey === key) return;
+          activeMovementKey = key;
+          sendCommand(key, { force: true });
+          return;
+        }
+
+        if (key === "q") setServoUi(Number(UI.servoAngle.value) - 15, true);
+        else if (key === "e") setServoUi(Number(UI.servoAngle.value) + 15, true);
+        else if (key === "c") setServoUi(SERVO_CENTER, true);
+        else sendCommand(key, { force: true });
+      });
+
+      window.addEventListener("keyup", event => {
+        const key = event.key.toLowerCase();
+        if (!movementKeys.has(key)) return;
+        event.preventDefault();
+        if (activeMovementKey === key) {
+          activeMovementKey = null;
+          sendCommand("x", { force: true });
+        }
+      });
+    }
+
+    bindUi();
+    updateManualLabels();
+    updateDriveLabels();
+    setServoUi(SERVO_CENTER, false);
+  </script>
+</body>
+</html>
